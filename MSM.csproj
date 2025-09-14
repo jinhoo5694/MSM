@@ -9,8 +9,9 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Avalonia" Version="11.3.5" />
+    <PackageReference Include="Avalonia" Version="11.3.6" />
     <PackageReference Include="Avalonia.Desktop" Version="11.3.5" />
+    <PackageReference Include="Avalonia.ReactiveUI" Version="11.3.6" />
     <PackageReference Include="Avalonia.Themes.Fluent" Version="11.3.5" />
     <PackageReference Include="Avalonia.Fonts.Inter" Version="11.3.5" />
     <!--Condition below is needed to remove Avalonia.Diagnostics package from build output in Release configuration.-->
@@ -19,5 +20,23 @@
       <PrivateAssets Condition="'$(Configuration)' != 'Debug'">All</PrivateAssets>
     </PackageReference>
     <PackageReference Include="EPPlus" Version="8.1.1" />
+    <PackageReference Include="Avalonia.Controls.DataGrid" Version="11.3.5" />
+    <PackageReference Include="ReactiveUI" Version="21.0.1" />
+    <PackageReference Include="ReactiveUI.Fody" Version="19.5.41" />
+  </ItemGroup>
+
+  
+
+  <ItemGroup>
+    <AvaloniaResource Include="Assets\*.png" />
+  </ItemGroup>
+
+  
+
+  <ItemGroup>
+    <Compile Update="EditProductWindow.axaml.cs">
+      <DependentUpon>EditProductWindow.axaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
   </ItemGroup>
 </Project>

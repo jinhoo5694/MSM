@@ -2,12 +2,29 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:MSM"
         mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
         x:Class="MSM.MainWindow"
+        xmlns:viewModels="clr-namespace:MSM.ViewModels"
+        xmlns:views="clr-namespace:MSM.Views"
+        x:DataType="viewModels:MainWindowViewModel"
         Title="MSM">
     <StackPanel Margin="20">
-        <TextBox Name="BarcodeTextBox" Watermark="Enter barcode..."/>
+        <TextBox Name="BarcodeTextBox" Watermark="Enter barcode..." Text="{Binding Barcode}"/>
         <Button Name="SearchButton" Content="Search" Margin="0,10,0,0"/>
-        <TextBlock Name="MessageTextBlock" Margin="0,10,0,0"/>
+        <TextBlock Name="MessageTextBlock" Margin="0,10,0,0" Text="{Binding Message}"/>
+
+        <ItemsControl x:Name="ProductsItemsControl" ItemsSource="{Binding Products}" Margin="0,20,0,0">
+            <ItemsControl.ItemsPanel>
+                <ItemsPanelTemplate>
+                    <WrapPanel Orientation="Horizontal" />
+                </ItemsPanelTemplate>
+            </ItemsControl.ItemsPanel>
+            <ItemsControl.ItemTemplate>
+                <DataTemplate>
+                    <views:ProductView />
+                </DataTemplate>
+            </ItemsControl.ItemTemplate>
+        </ItemsControl>
     </StackPanel>
 </Window>
