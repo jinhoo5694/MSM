@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using MSM.Models;
 
 namespace MSM.Services
@@ -7,5 +8,8 @@ namespace MSM.Services
         Product GetProductByBarcode(string barcode);
         void UpdateStock(string barcode, int quantity);
         void AddProduct(Product product);
+        void UpdateProduct(Product product);
+        void SaveProducts(IEnumerable<Product> products);
+        IEnumerable<Product> GetAllProducts();
     }
 }
