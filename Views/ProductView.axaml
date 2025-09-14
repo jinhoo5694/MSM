@@ -1,0 +1,20 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:viewModels="clr-namespace:MSM.ViewModels"
+             mc:Ignorable="d" d:DesignWidth="200" d:DesignHeight="250"
+             x:Class="MSM.Views.ProductView"
+             x:DataType="viewModels:ProductViewModel">
+    <Border BorderBrush="LightGray" BorderThickness="1" Margin="5" Padding="5">
+        <StackPanel Spacing="5">
+            <Image Source="{Binding ImagePath}" Width="100" Height="100" Stretch="UniformToFill"/>
+            <TextBlock Text="{Binding Name}" FontWeight="Bold"/>
+            <TextBlock Text="{Binding Barcode}"/>
+            <TextBlock Text="{Binding Quantity, StringFormat='Quantity: {0}'}"/>
+            <TextBlock Text="{Binding DefaultReductionAmount, StringFormat='Default Reduction: {0}'}"/>
+            <Button x:Name="EditButton" Content="Edit" Command="{Binding EditCommand}" CommandParameter="{Binding}"/>
+            <Button x:Name="DeleteButton" Content="Delete" Command="{Binding DeleteCommand}" CommandParameter="{Binding}"/>
+        </StackPanel>
+    </Border>
+</UserControl>
