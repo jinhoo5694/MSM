@@ -109,7 +109,7 @@ namespace MSM
                 }, DispatcherPriority.Background);
 
                 // 포커스 유지
-                BarcodeTextBox?.Focus();
+                _barcodeTextBox?.Focus();
             }
         }
     }
