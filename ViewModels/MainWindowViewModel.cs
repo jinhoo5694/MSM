@@ -1,12 +1,12 @@
 using System;
 using System.Collections.ObjectModel;
 using System.Linq;
-using System.Reactive;
-using System.Reactive.Linq;
 using System.Threading.Tasks;
+using System.Windows.Input;
+using Avalonia.Threading;
+using MSM.Commands;
 using MSM.Models;
 using MSM.Services;
-using ReactiveUI;
 
 namespace MSM.ViewModels
 {
@@ -20,27 +20,28 @@ namespace MSM.ViewModels
         public ObservableCollection<ProductViewModel> Products
         {
             get => _products;
-            set => this.RaiseAndSetIfChanged(ref _products, value);
+            set => SetAndRaiseIfChanged(ref _products, value);
         }
 
         public string Barcode
         {
             get => _barcode;
-            set => this.RaiseAndSetIfChanged(ref _barcode, value);
+            set => SetAndRaiseIfChanged(ref _barcode, value);
         }
 
         public string Message
         {
             get => _message;
-            set => this.RaiseAndSetIfChanged(ref _message, value);
+            set => SetAndRaiseIfChanged(ref _message, value);
         }
 
-        public ReactiveCommand<ProductViewModel, Unit> EditProductCommand { get; }
-        public ReactiveCommand<ProductViewModel, Unit> DeleteProductCommand { get; }
-        public ReactiveCommand<Unit, Unit> SearchCommand { get; }
-        public Interaction<EditProductViewModel, Product> ShowEditProductWindow { get; } = new Interaction<EditProductViewModel, Product>();
-        public Interaction<ReduceStockViewModel, int?> ShowReduceStockWindow { get; } = new Interaction<ReduceStockViewModel, int?>();
-        public Interaction<AddProductViewModel, Product> ShowAddProductWindow { get; } = new Interaction<AddProductViewModel, Product>();
+        public ICommand EditProductCommand { get; }
+        public ICommand DeleteProductCommand { get; }
+        public ICommand SearchCommand { get; }
+
+        public event Func<EditProductViewModel, Task<Product?>>? ShowEditProductWindow;
+        public event Func<ReduceStockViewModel, Task<int?>>? ShowReduceStockWindow;
+        public event Func<AddProductViewModel, Task<Product?>>? ShowAddProductWindow;
 
         public MainWindowViewModel(IStockService stockService)
         {
@@ -49,60 +50,81 @@ namespace MSM.ViewModels
             _message = string.Empty;
             _products = new ObservableCollection<ProductViewModel>();
 
-            EditProductCommand = ReactiveCommand.CreateFromTask<ProductViewModel>(async productViewModel =>
+            EditProductCommand = new AsyncRelayCommand(async parameter =>
             {
-                var editViewModel = new EditProductViewModel(productViewModel.Product, _stockService);
-                var updatedProduct = await ShowEditProductWindow.Handle(editViewModel);
-
-                if (updatedProduct != null)
+                if (parameter is ProductViewModel productViewModel && ShowEditProductWindow != null)
                 {
-                    LoadProducts();
+                    Product updatedProduct = await Dispatcher.UIThread.InvokeAsync(async () =>
+                    {
+                        var editViewModel = new EditProductViewModel(productViewModel.Product, _stockService);
+                        return await ShowEditProductWindow.Invoke(editViewModel);
+                    });
+
+                    if (updatedProduct != null)
+                    {
+                        var existingProductViewModel = Products.FirstOrDefault(p => p.Product.Barcode == updatedProduct.Barcode);
+                        if (existingProductViewModel != null)
+                        {
+                            existingProductViewModel.Name = updatedProduct.Name;
+                            existingProductViewModel.DefaultReductionAmount = updatedProduct.DefaultReductionAmount;
+                            existingProductViewModel.ImagePath = updatedProduct.ImagePath;
+                        }
+                    }
                 }
             });
 
-            DeleteProductCommand = ReactiveCommand.CreateFromTask<ProductViewModel>(async productViewModel =>
+            DeleteProductCommand = new RelayCommand(parameter =>
             {
-                var products = _stockService.GetAllProducts().ToList();
-                var productToDelete = products.FirstOrDefault(p => p.Barcode == productViewModel.Product.Barcode);
-                if (productToDelete != null)
+                if (parameter is ProductViewModel productViewModel)
                 {
-                    products.Remove(productToDelete);
-                    _stockService.SaveProducts(products);
-                    LoadProducts();
+                    var products = _stockService.GetAllProducts().ToList();
+                    var productToDelete = products.FirstOrDefault(p => p.Barcode == productViewModel.Product.Barcode);
+                    if (productToDelete != null)
+                    {
+                        products.Remove(productToDelete);
+                        _stockService.SaveProducts(products);
+                        LoadProducts();
+                    }
                 }
             });
 
-            SearchCommand = ReactiveCommand.CreateFromTask(async () =>
+            SearchCommand = new AsyncRelayCommand(async _ =>
             {
                 if (string.IsNullOrWhiteSpace(Barcode))
                 {
-                    Message = "Please enter a barcode.";
+                    Message = "바코드를 스캔해주세요.";
                     return;
                 }
 
                 var product = _stockService.GetProductByBarcode(Barcode);
                 if (product != null)
                 {
-                    var reduceStockViewModel = new ReduceStockViewModel(product);
-                    var newQuantity = await ShowReduceStockWindow.Handle(reduceStockViewModel);
-
-                    if (newQuantity.HasValue)
+                    if (ShowReduceStockWindow != null)
                     {
-                        _stockService.UpdateStock(product.Barcode, newQuantity.Value);
-                        Message = $"Stock for {product.Name} updated to {newQuantity.Value}.";
-                        LoadProducts();
+                        var reduceStockViewModel = new ReduceStockViewModel(product);
+                        var newQuantity = await ShowReduceStockWindow.Invoke(reduceStockViewModel);
+
+                        if (newQuantity.HasValue)
+                        {
+                            _stockService.UpdateStock(product.Barcode, newQuantity.Value);
+                            Message = $"Stock for {product.Name} updated to {newQuantity.Value}.";
+                            LoadProducts();
+                        }
                     }
                 }
                 else
                 {
-                    var addProductViewModel = new AddProductViewModel(Barcode);
-                    var newProduct = await ShowAddProductWindow.Handle(addProductViewModel);
-
-                    if (newProduct != null)
+                    if (ShowAddProductWindow != null)
                     {
-                        _stockService.AddProduct(newProduct);
-                        Message = $"New product added: {newProduct.Name}";
-                        LoadProducts();
+                        var addProductViewModel = new AddProductViewModel(Barcode, _stockService);
+                        var newProduct = await ShowAddProductWindow.Invoke(addProductViewModel);
+
+                        if (newProduct != null)
+                        {
+                            _stockService.AddProduct(newProduct);
+                            Message = $"New product added: {newProduct.Name}";
+                            LoadProducts();
+                        }
                     }
                 }
             });

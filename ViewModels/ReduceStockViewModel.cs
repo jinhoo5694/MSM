@@ -1,6 +1,6 @@
-using System.Reactive;
+using System.Windows.Input;
+using MSM.Commands;
 using MSM.Models;
-using ReactiveUI;
 
 namespace MSM.ViewModels
 {
@@ -12,24 +12,24 @@ namespace MSM.ViewModels
         public Product Product
         {
             get => _product;
-            set => this.RaiseAndSetIfChanged(ref _product, value);
+            set => SetAndRaiseIfChanged(ref _product, value);
         }
 
         public int ReductionAmount
         {
             get => _reductionAmount;
-            set => this.RaiseAndSetIfChanged(ref _reductionAmount, value);
+            set => SetAndRaiseIfChanged(ref _reductionAmount, value);
         }
 
-        public ReactiveCommand<Unit, int?> OkCommand { get; }
-        public ReactiveCommand<Unit, int?> CancelCommand { get; }
+        public ICommand OkCommand { get; }
+        public ICommand CancelCommand { get; }
 
         public ReduceStockViewModel(Product product)
         {
             _product = product;
             _reductionAmount = product.DefaultReductionAmount;
 
-            OkCommand = ReactiveCommand.Create(() =>
+            OkCommand = new RelayCommand<int?>(parameter =>
             {
                 if (ReductionAmount > 0 && ReductionAmount <= Product.Quantity)
                 {
@@ -38,7 +38,7 @@ namespace MSM.ViewModels
                 return (int?)null;
             });
 
-            CancelCommand = ReactiveCommand.Create(() => (int?)null);
+            CancelCommand = new RelayCommand<int?>(parameter => (int?)null);
         }
     }
 }

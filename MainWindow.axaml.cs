@@ -6,9 +6,7 @@ using MSM.ViewModels;
 using MSM.Models;
 using MSM.Views;
 using System;
-using System.Reactive.Linq;
 using System.Threading.Tasks;
-using ReactiveUI;
 
 namespace MSM
 {
@@ -43,29 +41,28 @@ namespace MSM
 
             if (DataContext is MainWindowViewModel viewModel)
             {
-                viewModel.ShowEditProductWindow.RegisterHandler(async interaction =>
+                viewModel.ShowEditProductWindow += async editViewModel =>
                 {
-                    var dialog = new EditProductWindow();
-                    dialog.DataContext = interaction.Input;
+                    var dialog = new EditProductWindow(editViewModel);
                     var result = await dialog.ShowDialog<Product>(this);
-                    interaction.SetOutput(result);
-                });
+                    return result;
+                };
 
-                viewModel.ShowAddProductWindow.RegisterHandler(async interaction =>
+                viewModel.ShowAddProductWindow += async addViewModel =>
                 {
                     var dialog = new AddProductWindow();
-                    dialog.DataContext = interaction.Input;
+                    dialog.DataContext = addViewModel;
                     var result = await dialog.ShowDialog<Product>(this);
-                    interaction.SetOutput(result);
-                });
+                    return result;
+                };
 
-                viewModel.ShowReduceStockWindow.RegisterHandler(async interaction =>
+                viewModel.ShowReduceStockWindow += async reduceViewModel =>
                 {
                     var dialog = new ReduceStockWindow();
-                    dialog.DataContext = interaction.Input;
+                    dialog.DataContext = reduceViewModel;
                     var result = await dialog.ShowDialog<int?>(this);
-                    interaction.SetOutput(result);
-                });
+                    return result;
+                };
             }
         }
 
@@ -78,9 +75,9 @@ namespace MSM
         {
             if (DataContext is MainWindowViewModel viewModel)
             {
-                viewModel.Barcode = _barcodeTextBox.Text;
-                await viewModel.SearchCommand.Execute().SubscribeOn(RxApp.MainThreadScheduler);
-                _messageTextBlock.Text = viewModel.Message;
+                                viewModel.Barcode = _barcodeTextBox!.Text;
+                viewModel.SearchCommand.Execute(null);
+                _messageTextBlock!.Text = viewModel.Message;
             }
         }
 
@@ -88,7 +85,7 @@ namespace MSM
         {
             if (DataContext is MainWindowViewModel viewModel && sender is Button button && button.DataContext is ProductViewModel productViewModel)
             {
-                viewModel.DeleteProductCommand.Execute(productViewModel).Subscribe();
+                viewModel.DeleteProductCommand.Execute(productViewModel);
             }
         }
     }

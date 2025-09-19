@@ -18,7 +18,7 @@
         <NumericUpDown Value="{Binding ReductionAmount}" Minimum="1" Maximum="{Binding Product.Quantity}"/>
 
         <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="10">
-            <Button Content="OK" Command="{Binding OkCommand}"/>
+            <Button Content="OK" Command="{Binding OkCommand}" CommandParameter="{Binding .}"/>
             <Button Content="Cancel" Command="{Binding CancelCommand}"/>
         </StackPanel>
     </StackPanel>

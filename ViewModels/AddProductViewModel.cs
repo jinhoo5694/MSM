@@ -1,6 +1,9 @@
-using System.Reactive;
+using System.Windows.Input;
+using MSM.Commands;
 using MSM.Models;
-using ReactiveUI;
+using System;
+using System.Threading.Tasks;
+using Avalonia.Logging;
 
 namespace MSM.ViewModels
 {
@@ -15,54 +18,74 @@ namespace MSM.ViewModels
         public string Barcode
         {
             get => _barcode;
-            set => this.RaiseAndSetIfChanged(ref _barcode, value);
+            set => SetAndRaiseIfChanged(ref _barcode, value);
         }
 
         public string Name
         {
             get => _name;
-            set => this.RaiseAndSetIfChanged(ref _name, value);
+            set => SetAndRaiseIfChanged(ref _name, value);
         }
 
         public int Quantity
         {
             get => _quantity;
-            set => this.RaiseAndSetIfChanged(ref _quantity, value);
+            set => SetAndRaiseIfChanged(ref _quantity, value);
         }
 
         public string ImagePath
         {
             get => _imagePath;
-            set => this.RaiseAndSetIfChanged(ref _imagePath, value);
+            set => SetAndRaiseIfChanged(ref _imagePath, value);
         }
 
         public int DefaultReductionAmount
         {
             get => _defaultReductionAmount;
-            set => this.RaiseAndSetIfChanged(ref _defaultReductionAmount, value);
+            set => SetAndRaiseIfChanged(ref _defaultReductionAmount, value);
         }
 
-        public ReactiveCommand<Unit, Product> SaveCommand { get; }
-        public ReactiveCommand<Unit, Unit> CancelCommand { get; }
+        public ICommand SaveCommand { get; }
+        public ICommand CancelCommand { get; }
 
-        public AddProductViewModel(string barcode)
+        public event Func<Product, Task>? ProductSaved;
+        public event Func<Task>? ProductCancelled;
+        private readonly Services.IStockService _stockService;
+
+        public AddProductViewModel(string barcode, Services.IStockService stockService)
         {
             _barcode = barcode;
             _name = string.Empty;
             _quantity = 0;
             _imagePath = string.Empty;
             _defaultReductionAmount = 1;
+            _stockService = stockService;
 
-            SaveCommand = ReactiveCommand.Create(() => new Product
+            SaveCommand = new AsyncRelayCommand(async _ =>
             {
-                Barcode = Barcode,
-                Name = Name,
-                Quantity = Quantity,
-                ImagePath = ImagePath,
-                DefaultReductionAmount = DefaultReductionAmount
+                var newProduct = new Product
+                {
+                    Barcode = Barcode,
+                    Name = Name,
+                    Quantity = Quantity,
+                    ImagePath = ImagePath,
+                    DefaultReductionAmount = DefaultReductionAmount
+                };
+                System.Diagnostics.Debug.WriteLine($"Barcode: {newProduct.Barcode}");
+                _stockService.AddProduct(newProduct);
+                if (ProductSaved != null)
+                {
+                    await ProductSaved.Invoke(newProduct);
+                }
             });
 
-            CancelCommand = ReactiveCommand.Create(() => { });
+            CancelCommand = new AsyncRelayCommand(async _ =>
+            {
+                if (ProductCancelled != null)
+                {
+                    await ProductCancelled.Invoke();
+                }
+            });
         }
     }
 }

@@ -1,28 +1,71 @@
-using System.Reactive; // Add this
+using System.Windows.Input;
 using MSM.Models;
-using ReactiveUI;
 
 namespace MSM.ViewModels
 {
     public class ProductViewModel : ViewModelBase
     {
         private Product _product;
-        public Product Product => _product; // Add this public property
+        public Product Product => _product;
 
         public string Barcode => _product.Barcode;
-        public string Name => _product.Name;
-        public int Quantity => _product.Quantity;
-        public string ImagePath => _product.ImagePath;
-        public int DefaultReductionAmount => _product.DefaultReductionAmount;
+        public string Name
+        {
+            get => _product.Name;
+            set
+            {
+                if (_product.Name != value)
+                {
+                    _product.Name = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+        public int Quantity
+        {
+            get => _product.Quantity;
+            set
+            {
+                if (_product.Quantity != value)
+                {
+                    _product.Quantity = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+        public string ImagePath
+        {
+            get => _product.ImagePath;
+            set
+            {
+                if (_product.ImagePath != value)
+                {
+                    _product.ImagePath = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+        public int DefaultReductionAmount
+        {
+            get => _product.DefaultReductionAmount;
+            set
+            {
+                if (_product.DefaultReductionAmount != value)
+                {
+                    _product.DefaultReductionAmount = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
 
-        public ReactiveCommand<ProductViewModel, Unit> EditCommand { get; }
-        public ReactiveCommand<ProductViewModel, Unit> DeleteCommand { get; } // Add this
+        public ICommand EditCommand { get; }
+        public ICommand DeleteCommand { get; }
 
-        public ProductViewModel(Product product, ReactiveCommand<ProductViewModel, Unit> editCommand, ReactiveCommand<ProductViewModel, Unit> deleteCommand)
+        public ProductViewModel(Product product, ICommand editCommand, ICommand deleteCommand)
         {
             _product = product;
-            EditCommand = editCommand; // Assign the command
-            DeleteCommand = deleteCommand; // Assign the command
+            EditCommand = editCommand;
+            DeleteCommand = deleteCommand;
         }
     }
 }
