@@ -2,7 +2,12 @@ using System.Windows.Input;
 using MSM.Commands;
 using MSM.Models;
 using System;
+using System.Linq;
+using System.Net.Mime;
 using System.Threading.Tasks;
+using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Logging;
 
 namespace MSM.ViewModels
@@ -47,6 +52,7 @@ namespace MSM.ViewModels
 
         public ICommand SaveCommand { get; }
         public ICommand CancelCommand { get; }
+        public ICommand BrowseImageCommand { get; }
 
         public event Func<Product, Task>? ProductSaved;
         public event Func<Task>? ProductCancelled;
@@ -61,31 +67,57 @@ namespace MSM.ViewModels
             _defaultReductionAmount = 1;
             _stockService = stockService;
 
-            SaveCommand = new AsyncRelayCommand(async _ =>
-            {
-                var newProduct = new Product
-                {
-                    Barcode = Barcode,
-                    Name = Name,
-                    Quantity = Quantity,
-                    ImagePath = ImagePath,
-                    DefaultReductionAmount = DefaultReductionAmount
-                };
-                System.Diagnostics.Debug.WriteLine($"Barcode: {newProduct.Barcode}");
-                _stockService.AddProduct(newProduct);
-                if (ProductSaved != null)
-                {
-                    await ProductSaved.Invoke(newProduct);
-                }
-            });
+            SaveCommand = new RelayCommand(_ => Save());
 
-            CancelCommand = new AsyncRelayCommand(async _ =>
+            CancelCommand = new RelayCommand(_ => CloseWindow(null));
+            BrowseImageCommand = new RelayCommand(async _ => await BrowserImage());
+        }
+
+        private void Save()
+        {
+            var newProduct = new Product
             {
-                if (ProductCancelled != null)
+                Barcode = Barcode,
+                Name = Name,
+                Quantity = Quantity,
+                ImagePath = ImagePath,
+                DefaultReductionAmount = DefaultReductionAmount
+            };
+            
+            _stockService.AddProduct(newProduct);
+
+            CloseWindow(newProduct);
+        }
+
+        private async Task BrowserImage()
+        {
+            if (Application.Current.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
+            {
+                var window = desktop.Windows.FirstOrDefault(w => w.DataContext == this);
+                if (window != null)
                 {
-                    await ProductCancelled.Invoke();
+                    var dialog = new OpenFileDialog
+                    {
+                        AllowMultiple = false,
+                        Filters = { new FileDialogFilter { Name = "Images", Extensions = { "png", "jpg", "jpeg" } } }
+                    };
+                    
+                    var result = await dialog.ShowAsync(window);
+                    if (result != null && result.Length > 0)
+                    {
+                        ImagePath = result[0];
+                    }
                 }
-            });
+            }
+        }
+
+        private void CloseWindow(Product? result)
+        {
+            if (Application.Current.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
+            {
+                var window = desktop.Windows.FirstOrDefault(w => w.DataContext == this);
+                window?.Close(result);
+            }
         }
     }
 }
