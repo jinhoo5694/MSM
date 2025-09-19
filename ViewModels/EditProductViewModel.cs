@@ -1,11 +1,14 @@
 using System;
+using System.IO;
 using System.Linq;
+using System.Net;
 using System.Net.Mime;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
+using Avalonia.Media.Imaging;
 using Avalonia.Platform.Storage;
 using MSM.Commands;
 using MSM.Models;
@@ -18,15 +21,45 @@ namespace MSM.ViewModels
         private readonly IStockService _stockService;
         private readonly Product _originalProduct;
 
-        public string Name { get; set; }
-        public int DefaultReductionAmount { get; set; }
-        public string ImagePath { get; set; }
+        public string Name
+        {
+            get => _name;
+            set { if (_name != value) { _name = value; OnPropertyChanged(); } }
+        }
+        public int DefaultReductionAmount
+        {
+            get => _defaultReductionAmount;
+            set { if (_defaultReductionAmount != value) { _defaultReductionAmount = value; OnPropertyChanged(); } }
+        }
+
+        private string _imagePath;
+        public string ImagePath
+        {
+            get => _imagePath;
+            set
+            {
+                if (_imagePath != value)
+                {
+                    _imagePath = value;
+                    OnPropertyChanged();
+                    OnPropertyChanged(nameof(ProductImage));
+                }
+            }
+        }
         public string Barcode => _originalProduct.Barcode;
         
         private string _name;
         private int _defaultReductionAmount;
-        private string _imagePath;
 
+        public Bitmap? ProductImage
+        {
+            get
+            {
+                if (!string.IsNullOrEmpty(_imagePath) && File.Exists(ImagePath))
+                    return new Bitmap(ImagePath);
+                return null;
+            }
+        }
 
 
         public ICommand SaveCommand { get; }
@@ -40,9 +73,9 @@ namespace MSM.ViewModels
             _originalProduct = product;
             _stockService = stockService;
 
-            Name = product.Name;
-            DefaultReductionAmount = product.DefaultReductionAmount;
-            ImagePath = product.ImagePath;
+            _name = product.Name ?? string.Empty;
+            _defaultReductionAmount = product.DefaultReductionAmount;
+            _imagePath = product.ImagePath ?? string.Empty;
 
             SaveCommand = new AsyncRelayCommand(async _ => await Save(), _ => !string.IsNullOrWhiteSpace(Name) && DefaultReductionAmount > 0);
             CancelCommand = new AsyncRelayCommand(async _ => await Cancel());

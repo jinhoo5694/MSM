@@ -136,7 +136,7 @@ namespace MSM.ViewModels
             LoadProducts();
         }
 
-        private void LoadProducts()
+        public void LoadProducts()
         {
             var products = _stockService.GetAllProducts();
             Products.Clear();
