@@ -1,0 +1,89 @@
+# ------------------------
+# .NET / C# 기본 빌드 아티팩트
+# ------------------------
+bin/
+obj/
+[Bb]uild/
+[Bb]uilds/
+[Ll]og/
+[Ll]ogs/
+[Tt]est[Rr]esult*/
+*.exe
+*.dll
+*.pdb
+*.cache
+*.log
+*.vspscc
+*.user
+*.suo
+*.dbmdl
+*.bak
+*.swp
+*.tmp
+*.temp
+*.ncb
+*.opendb
+*.VC.db
+
+# ------------------------
+# Visual Studio / Rider / VS Code
+# ------------------------
+.vs/
+.idea/
+*.userprefs
+*.csproj.user
+*.csproj.DotSettings
+.vscode/
+*.code-workspace
+
+# ------------------------
+# NuGet / Paket
+# ------------------------
+*.nupkg
+*.snupkg
+*.nuspec
+.nuget/
+packages/
+*.psmdcp
+project.lock.json
+project.fragment.lock.json
+artifacts/
+
+# ------------------------
+# Avalonia 특화
+# ------------------------
+# Avalonia 리소스 빌드 결과
+*.axaml.g.cs
+*.g.cs
+*.xaml.g.cs
+*.resources
+*.rdb
+
+# Avalonia XAML Hot Reload 캐시
+.avalonia/
+
+# ------------------------
+# OS 별 불필요 파일
+# ------------------------
+# macOS
+.DS_Store
+
+# Windows
+Thumbs.db
+desktop.ini
+
+# Linux
+*~
+
+# ------------------------
+# 기타
+# ------------------------
+# JetBrains Rider settings
+.idea/
+
+# User secrets
+secrets.json
+
+# Publish output
+publish/
+

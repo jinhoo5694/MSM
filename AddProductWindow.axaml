@@ -19,14 +19,18 @@
         <TextBlock Text="재고 수량:"/>
         <NumericUpDown Value="{Binding Quantity}" Minimum="0"/>
 
-        <TextBlock Text="이미지 경로:"/>
-        <TextBox Text="{Binding ImagePath}"/>
+        <StackPanel Orientation="Horizontal">
+            <TextBlock Text="{Binding ImagePath}" Width="200"/>
+            <Button Content="이미지 찾기" Command="{Binding BrowseImageCommand}"></Button>
+        </StackPanel>
+        
+        
 
         <TextBlock Text="1회 차감 수량:"/>
         <NumericUpDown Value="{Binding DefaultReductionAmount}" Minimum="1"/>
 
         <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="10">
-            <Button Content="저장" Command="{Binding SaveCommand}" CommandParameter="{Binding .}"/>
+            <Button Content="저장" Command="{Binding SaveCommand}"/>
             <Button Content="취소" Command="{Binding CancelCommand}"/>
         </StackPanel>
     </StackPanel>

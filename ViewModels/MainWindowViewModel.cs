@@ -3,6 +3,7 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Input;
+using Avalonia.Input;
 using Avalonia.Threading;
 using MSM.Commands;
 using MSM.Models;
@@ -50,6 +51,7 @@ namespace MSM.ViewModels
             _message = string.Empty;
             _products = new ObservableCollection<ProductViewModel>();
 
+            
             EditProductCommand = new AsyncRelayCommand(async parameter =>
             {
                 if (parameter is ProductViewModel productViewModel && ShowEditProductWindow != null)
@@ -127,6 +129,8 @@ namespace MSM.ViewModels
                         }
                     }
                 }
+
+                Barcode = string.Empty;
             });
 
             LoadProducts();
@@ -141,5 +145,7 @@ namespace MSM.ViewModels
                 Products.Add(new ProductViewModel(product, EditProductCommand, DeleteProductCommand));
             }
         }
+        
+       
     }
 }

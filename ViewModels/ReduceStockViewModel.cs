@@ -1,6 +1,11 @@
+using System.Linq;
+using System.Net.Mime;
 using System.Windows.Input;
+using Avalonia;
+using Avalonia.Controls.ApplicationLifetimes;
 using MSM.Commands;
 using MSM.Models;
+using MSM.Services;
 
 namespace MSM.ViewModels
 {
@@ -29,16 +34,28 @@ namespace MSM.ViewModels
             _product = product;
             _reductionAmount = product.DefaultReductionAmount;
 
-            OkCommand = new RelayCommand<int?>(parameter =>
+            OkCommand = new RelayCommand(_ =>
             {
                 if (ReductionAmount > 0 && ReductionAmount <= Product.Quantity)
                 {
-                    return Product.Quantity - ReductionAmount;
+                    CloseWindow(Product.Quantity - ReductionAmount);
                 }
-                return (int?)null;
+                else
+                {
+                    CloseWindow(null);
+                }
             });
+            CancelCommand = new RelayCommand(_ => CloseWindow(null));
+            
+        }
 
-            CancelCommand = new RelayCommand<int?>(parameter => (int?)null);
+        private void CloseWindow(int? result)
+        {
+            if (Application.Current.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
+            {
+                var window = desktop.Windows.FirstOrDefault(w => w.DataContext == this);
+                window?.Close(result);
+            }
         }
     }
 }
