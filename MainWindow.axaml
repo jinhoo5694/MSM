@@ -10,7 +10,7 @@
         x:DataType="viewModels:MainWindowViewModel"
         Title="MSM">
     <StackPanel Margin="20">
-        <TextBox Name="BarcodeTextBox" Watermark="바코드 입력" Text="{Binding Barcode}"/>
+        <TextBox Name="BarcodeTextBox" Watermark="바코드 입력" Text="{Binding Barcode, UpdateSourceTrigger=PropertyChanged}" Focusable="True" KeyUp="BarcodeTextBox_KeyUp"/>
         <Button Name="SearchButton" Content="검색" Margin="0,10,0,0"/>
         <TextBlock Name="MessageTextBlock" Margin="0,10,0,0" Text="{Binding Message}"/>
 
