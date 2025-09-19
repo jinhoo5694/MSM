@@ -51,6 +51,7 @@ namespace MSM.ViewModels
             _message = string.Empty;
             _products = new ObservableCollection<ProductViewModel>();
 
+            
             EditProductCommand = new AsyncRelayCommand(async parameter =>
             {
                 if (parameter is ProductViewModel productViewModel && ShowEditProductWindow != null)

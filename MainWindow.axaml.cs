@@ -52,6 +52,7 @@ namespace MSM
                     var dialog = new EditProductWindow();
                     dialog.DataContext = editViewModel;
                     var result = await dialog.ShowDialog<Product>(this);
+                    _barcodeTextBox?.Focus();
                     return result;
                 };
 
@@ -60,6 +61,7 @@ namespace MSM
                     var dialog = new AddProductWindow();
                     dialog.DataContext = addViewModel;
                     var result = await dialog.ShowDialog<Product>(this);
+                    _barcodeTextBox?.Focus();
                     return result;
                 };
 
@@ -68,6 +70,7 @@ namespace MSM
                     var dialog = new ReduceStockWindow();
                     dialog.DataContext = reduceViewModel;
                     var result = await dialog.ShowDialog<int?>(this);
+                    _barcodeTextBox?.Focus();
                     return result;
                 };
             }
