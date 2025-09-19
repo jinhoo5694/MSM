@@ -36,5 +36,8 @@ build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
 [C:/Users/jinho/DEV/MSM/ReduceStockWindow.axaml]
 build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
 
+[C:/Users/jinho/DEV/MSM/Views/EditProductView.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
 [C:/Users/jinho/DEV/MSM/Views/ProductView.axaml]
 build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml

@@ -1,12 +1,11 @@
 using System;
-using System.Reactive;
-using System.Reactive.Linq; // Add this
-using System.Threading.Tasks; // Add this
+using System.Threading.Tasks;
+using System.Windows.Input;
 using Avalonia.Controls;
 using Avalonia.Platform.Storage;
+using MSM.Commands;
 using MSM.Models;
 using MSM.Services;
-using ReactiveUI;
 
 namespace MSM.ViewModels
 {
@@ -19,31 +18,31 @@ namespace MSM.ViewModels
         public string Name
         {
             get => _name;
-            set => this.RaiseAndSetIfChanged(ref _name, value);
+            set => SetAndRaiseIfChanged(ref _name, value);
         }
 
         private int _defaultReductionAmount;
         public int DefaultReductionAmount
         {
             get => _defaultReductionAmount;
-            set => this.RaiseAndSetIfChanged(ref _defaultReductionAmount, value);
+            set => SetAndRaiseIfChanged(ref _defaultReductionAmount, value);
         }
 
         private string _imagePath;
         public string ImagePath
         {
             get => _imagePath;
-            set => this.RaiseAndSetIfChanged(ref _imagePath, value);
+            set => SetAndRaiseIfChanged(ref _imagePath, value);
         }
 
         public string Barcode => _originalProduct.Barcode;
 
-        public ReactiveCommand<Unit, Product> SaveCommand { get; } // Change return type to Product
-        public ReactiveCommand<Unit, Unit> CancelCommand { get; }
-        public ReactiveCommand<Unit, Unit> BrowseImageCommand { get; }
+        public ICommand SaveCommand { get; }
+        public ICommand CancelCommand { get; }
+        public ICommand BrowseImageCommand { get; }
 
-        public Interaction<Unit, string> ShowFilePicker { get; } = new Interaction<Unit, string>();
-        public Interaction<Unit, Unit> CloseWindow { get; } = new Interaction<Unit, Unit>(); // Add this for closing the window
+        public event Func<Task<string?>>? ShowFilePicker;
+        public event Func<Product?, Task>? CloseWindow;
 
         public EditProductViewModel(Product product, IStockService stockService)
         {
@@ -54,33 +53,49 @@ namespace MSM.ViewModels
             DefaultReductionAmount = product.DefaultReductionAmount;
             ImagePath = product.ImagePath;
 
-            SaveCommand = ReactiveCommand.CreateFromTask(Save, outputScheduler: RxApp.MainThreadScheduler);
-            CancelCommand = ReactiveCommand.CreateFromTask(Cancel, outputScheduler: RxApp.MainThreadScheduler);
-            BrowseImageCommand = ReactiveCommand.CreateFromTask(BrowseImage, outputScheduler: RxApp.MainThreadScheduler);
+            SaveCommand = new AsyncRelayCommand(async _ => await Save(), _ => !string.IsNullOrWhiteSpace(Name) && DefaultReductionAmount > 0);
+            CancelCommand = new AsyncRelayCommand(async _ => await Cancel());
+            BrowseImageCommand = new AsyncRelayCommand(async _ => await BrowseImage());
+
+            this.PropertyChanged += (sender, args) =>
+            {
+                if (args.PropertyName == nameof(Name) || args.PropertyName == nameof(DefaultReductionAmount))
+                {
+                    ((AsyncRelayCommand)SaveCommand).RaiseCanExecuteChanged();
+                }
+            };
         }
 
-        private async Task<Product> Save() // Change return type to Task<Product>
+        private async Task Save()
         {
             _originalProduct.Name = Name;
             _originalProduct.DefaultReductionAmount = DefaultReductionAmount;
             _originalProduct.ImagePath = ImagePath;
 
             _stockService.UpdateProduct(_originalProduct);
-            await CloseWindow.Handle(Unit.Default); // Close the window
-            return _originalProduct; // Return the updated product
+            if (CloseWindow != null)
+            {
+                await CloseWindow.Invoke(_originalProduct);
+            }
         }
 
-        private async Task Cancel() // Change to async Task
+        private async Task Cancel()
         {
-            await CloseWindow.Handle(Unit.Default); // Close the window without saving
+            if (CloseWindow != null)
+            {
+                await CloseWindow.Invoke(null);
+            }
         }
 
         private async System.Threading.Tasks.Task BrowseImage()
         {
-            var result = await ShowFilePicker.Handle(Unit.Default).FirstAsync(); // Added .FirstAsync()
-            if (!string.IsNullOrEmpty(result))
+            if (ShowFilePicker != null)
             {
-                ImagePath = result;
+                var result = await ShowFilePicker.Invoke();
+                if (!string.IsNullOrEmpty(result))
+                {
+                    ImagePath = result;
+                }
             }
         }
     }

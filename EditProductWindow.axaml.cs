@@ -7,7 +7,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Avalonia;
 
-namespace MSM.Views
+namespace MSM
 {
     public partial class EditProductWindow : Window
     {
@@ -22,13 +22,13 @@ namespace MSM.Views
         public EditProductWindow(EditProductViewModel viewModel) : this()
         {
             DataContext = viewModel;
-            viewModel.ShowFilePicker.RegisterHandler(async interaction =>
+
+            viewModel.ShowFilePicker += async () =>
             {
                 var topLevel = TopLevel.GetTopLevel(this);
                 if (topLevel == null)
                 {
-                    interaction.SetOutput(null);
-                    return;
+                    return null;
                 }
 
                 var files = await topLevel.StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions
@@ -38,18 +38,14 @@ namespace MSM.Views
                     FileTypeFilter = new[] { FilePickerFileTypes.ImageAll }
                 });
 
-                interaction.SetOutput(files?.FirstOrDefault()?.Path.LocalPath);
-            });
+                return files?.FirstOrDefault()?.Path.LocalPath;
+            };
 
-            viewModel.SaveCommand.Subscribe(product =>
+                        viewModel.CloseWindow += (product) =>
             {
                 Close(product);
-            });
-
-            viewModel.CancelCommand.Subscribe(_ =>
-            {
-                Close(null);
-            });
+                return Task.CompletedTask;
+            };
         }
 
         private void InitializeComponent()

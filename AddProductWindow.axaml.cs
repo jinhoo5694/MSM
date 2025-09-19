@@ -2,6 +2,7 @@ using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
 using MSM.ViewModels;
 using MSM.Models;
+using System.Threading.Tasks;
 
 namespace MSM
 {
@@ -14,7 +15,20 @@ namespace MSM
 
         public AddProductWindow(string barcode) : this()
         {
-            DataContext = new AddProductViewModel(barcode);
+            if (DataContext is AddProductViewModel viewModel)
+            {
+                viewModel.ProductSaved += (product) =>
+                {
+                    Close(product);
+                    return Task.CompletedTask;
+                };
+
+                viewModel.ProductCancelled += () =>
+                {
+                    Close(null);
+                    return Task.CompletedTask;
+                };
+            }
         }
 
         private void InitializeComponent()

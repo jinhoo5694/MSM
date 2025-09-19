@@ -1,42 +1,34 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:d="clr-namespace:MSM.ViewModels"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:viewModels="clr-namespace:MSM.ViewModels"
-        xmlns:rxui="http://reactiveui.net"
-        mc:Ignorable="d" d:DesignWidth="400" d:DesignHeight="450"
-        x:Class="MSM.Views.EditProductWindow"
-        x:DataType="viewModels:EditProductViewModel"
-        Title="Edit Product">
-    <StackPanel Margin="20" Spacing="10">
-        <TextBlock Text="Edit Product" FontSize="20" FontWeight="Bold"/>
+        mc:Ignorable="d" d:DesignWidth="400" d:DesignHeight="300"
+        x:Class="MSM.EditProductWindow"
+        Title="EditProductWindow"
+        x:DataType="d:EditProductViewModel"
+        Height="500"
+        Width="400">
+    <Design.DataContext>
+        <d:EditProductViewModel/>
+    </Design.DataContext>
+    <StackPanel Margin="20" Height="500" Width="400">
+                        <TextBlock Text="상품명:" Margin="0,0,0,5"/>
+        <TextBox Text="{Binding Name}" Width="200" Margin="0,0,0,10"/>
 
-        <StackPanel Orientation="Horizontal" Spacing="10">
-            <TextBlock Text="Barcode:" VerticalAlignment="Center"/>
-            <TextBlock Text="{Binding Barcode}" VerticalAlignment="Center" FontWeight="Bold"/>
-        </StackPanel>
+        <TextBlock Text="1회 차감 수량:" Margin="0,0,0,5"/>
+        <NumericUpDown Value="{Binding DefaultReductionAmount}" Minimum="1" Maximum="100" Width="100" Margin="0,0,0,10"/>
 
-        <StackPanel Orientation="Horizontal" Spacing="10">
-            <TextBlock Text="Name:" VerticalAlignment="Center"/>
-            <TextBox Text="{Binding Name}" Width="200"/>
-        </StackPanel>
-
-        <StackPanel Orientation="Horizontal" Spacing="10">
-            <TextBlock Text="Default Reduction:" VerticalAlignment="Center"/>
-            <NumericUpDown Value="{Binding DefaultReductionAmount}" Minimum="1" Maximum="100" Width="100"/>
-        </StackPanel>
-
-        <StackPanel Orientation="Horizontal" Spacing="10">
-            <TextBlock Text="Image Path:" VerticalAlignment="Center"/>
+        <StackPanel Orientation="Horizontal" Spacing="10" Margin="0,0,0,10">
+            <TextBlock Text="이미지 경로:" VerticalAlignment="Center"/>
             <TextBox Text="{Binding ImagePath}" IsReadOnly="True" Width="200"/>
-            <Button Content="Browse Image" Command="{Binding BrowseImageCommand}"/>
+            <Button Content="이미지 탐색" Command="{Binding BrowseImageCommand}"/>
         </StackPanel>
 
         <Image Source="{Binding ImagePath}" Width="150" Height="150" Stretch="UniformToFill" Margin="0,10,0,0"/>
 
         <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="10" Margin="0,20,0,0">
-            <Button Content="Save" Command="{Binding SaveCommand}"/>
-            <Button Content="Cancel" Command="{Binding CancelCommand}"/>
+            <Button Content="저장" Command="{Binding SaveCommand}"/>
+            <Button Content="취소" Command="{Binding CancelCommand}"/>
         </StackPanel>
     </StackPanel>
 </Window>
