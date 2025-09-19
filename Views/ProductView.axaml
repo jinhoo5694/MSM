@@ -8,7 +8,7 @@
              x:DataType="viewModels:ProductViewModel">
     <Border BorderBrush="LightGray" BorderThickness="1" Margin="5" Padding="5">
         <StackPanel Spacing="5">
-            <Image Source="{Binding ImagePath}" Width="100" Height="100" Stretch="UniformToFill"/>
+            <Image Source="{Binding ProductImage}" Width="100" Height="100" Stretch="UniformToFill"/>
             <TextBlock Text="{Binding Name}" FontWeight="Bold"/>
             <TextBlock Text="{Binding Barcode, StringFormat='바코드: {0}'}"/>
             <TextBlock Text="{Binding Quantity, StringFormat='남은 재고: {0}'}"/>

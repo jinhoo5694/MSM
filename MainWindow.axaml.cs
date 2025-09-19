@@ -52,6 +52,10 @@ namespace MSM
                     var dialog = new EditProductWindow();
                     dialog.DataContext = editViewModel;
                     var result = await dialog.ShowDialog<Product>(this);
+                    if (result != null)
+                    {
+                        viewModel.LoadProducts();
+                    }
                     _barcodeTextBox?.Focus();
                     return result;
                 };
