@@ -12,11 +12,6 @@ namespace MSM
             InitializeComponent();
         }
 
-        public ReduceStockWindow(Product product) : this()
-        {
-            DataContext = new ReduceStockViewModel(product);
-        }
-
         private void InitializeComponent()
         {
             AvaloniaXamlLoader.Load(this);

@@ -7,6 +7,8 @@ using MSM.Models;
 using MSM.Views;
 using System;
 using System.Threading.Tasks;
+using Avalonia.Input;
+using Avalonia.Threading;
 
 namespace MSM
 {
@@ -30,6 +32,10 @@ namespace MSM
                 // In a real application, you'd likely use a DI container to inject IStockService
                 // For simplicity, we'll create it directly here.
                 DataContext = new MainWindowViewModel(new StockService());
+                this.Opened += (_, _) =>
+                {
+                    _barcodeTextBox?.Focus();
+                };
             }
 
             _barcodeTextBox = this.FindControl<TextBox>("BarcodeTextBox");
@@ -43,8 +49,10 @@ namespace MSM
             {
                 viewModel.ShowEditProductWindow += async editViewModel =>
                 {
-                    var dialog = new EditProductWindow(editViewModel);
+                    var dialog = new EditProductWindow();
+                    dialog.DataContext = editViewModel;
                     var result = await dialog.ShowDialog<Product>(this);
+                    _barcodeTextBox?.Focus();
                     return result;
                 };
 
@@ -53,6 +61,7 @@ namespace MSM
                     var dialog = new AddProductWindow();
                     dialog.DataContext = addViewModel;
                     var result = await dialog.ShowDialog<Product>(this);
+                    _barcodeTextBox?.Focus();
                     return result;
                 };
 
@@ -61,6 +70,7 @@ namespace MSM
                     var dialog = new ReduceStockWindow();
                     dialog.DataContext = reduceViewModel;
                     var result = await dialog.ShowDialog<int?>(this);
+                    _barcodeTextBox?.Focus();
                     return result;
                 };
             }
@@ -80,12 +90,26 @@ namespace MSM
                 _messageTextBlock!.Text = viewModel.Message;
             }
         }
-
-        private void DeleteProduct_Click(object sender, RoutedEventArgs e)
+        
+        private void BarcodeTextBox_KeyUp(object? sender, KeyEventArgs e)
         {
-            if (DataContext is MainWindowViewModel viewModel && sender is Button button && button.DataContext is ProductViewModel productViewModel)
+            if (e.Key == Key.Enter)
             {
-                viewModel.DeleteProductCommand.Execute(productViewModel);
+                if (DataContext is MainWindowViewModel vm)
+                {
+                    if (vm.SearchCommand?.CanExecute(null) == true)
+                    {
+                        vm.SearchCommand.Execute(null);
+                    }
+                }
+                
+                Dispatcher.UIThread.Post(() =>
+                {
+                    _barcodeTextBox?.Focus();
+                }, DispatcherPriority.Background);
+
+                // 포커스 유지
+                BarcodeTextBox?.Focus();
             }
         }
     }
