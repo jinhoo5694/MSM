@@ -1,5 +1,6 @@
 using System;
 using System.Linq;
+using System.Net.Mime;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using Avalonia;
@@ -23,11 +24,7 @@ namespace MSM.ViewModels
         public string Barcode => _originalProduct.Barcode;
         
         private string _name;
-        
-
         private int _defaultReductionAmount;
-
-
         private string _imagePath;
 
 
@@ -60,10 +57,13 @@ namespace MSM.ViewModels
             _originalProduct.ImagePath = ImagePath;
 
             _stockService.UpdateProduct(_originalProduct);
+
+            CloseWindow(_originalProduct);
         }
 
         private async Task Cancel()
         {
+            CloseWindow(null);
         }
 
         private async Task BrowseImage()
@@ -75,6 +75,15 @@ namespace MSM.ViewModels
                 {
                     ImagePath = result;
                 }
+            }
+        }
+
+        private void CloseWindow(Product? result)
+        {
+            if (Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
+            {
+                var window = desktop.Windows.FirstOrDefault(w => w.DataContext == this);
+                window?.Close(result);
             }
         }
         
