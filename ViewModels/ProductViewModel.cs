@@ -45,6 +45,9 @@ namespace MSM.ViewModels
                 }
             }
         }
+        
+        
+        
         public int DefaultReductionAmount
         {
             get => _product.DefaultReductionAmount;
