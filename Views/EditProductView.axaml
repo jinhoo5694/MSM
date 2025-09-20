@@ -16,6 +16,11 @@
         </StackPanel>
 
         <StackPanel Orientation="Horizontal" Spacing="10">
+            <TextBlock Text="전체 수량:"/>
+            <NumericUpDown Value="{Binding Quantity, Mode=TwoWay}" Width="100" Minimum="0"/>
+        </StackPanel>
+        
+        <StackPanel Orientation="Horizontal" Spacing="10">
             <TextBlock Text="상품명:" VerticalAlignment="Center"/>
             <TextBox Text="{Binding Name}" Width="200"/>
         </StackPanel>

@@ -1,8 +1,11 @@
 using System;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using System.Windows.Input;
+using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Threading;
 using MSM.Commands;
@@ -17,7 +20,38 @@ namespace MSM.ViewModels
         private ObservableCollection<ProductViewModel> _products;
         private string _barcode;
         private string _message;
+        private readonly Window _owner;
+        private DateTimeOffset? _startDate = DateTimeOffset.Now.AddDays(-7);
+        public DateTimeOffset? StartDate
+        {
+            get => _startDate;
+            set
+            {
+                if (_startDate != value)
+                {
+                    _startDate = value;
+                    OnPropertyChanged();
+                    OnPropertyChanged(nameof(StartDateFormatted));
+                }
+            }
+        }
 
+        private DateTimeOffset? _endDate = DateTimeOffset.Now;
+        public DateTimeOffset? EndDate
+        {
+            get => _endDate;
+            set
+            {
+                if (_endDate != value)
+                {
+                    _endDate = value;
+                    OnPropertyChanged();
+                    OnPropertyChanged(nameof(EndDateFormatted));
+                }
+            }
+        }
+        public string StartDateFormatted => StartDate?.ToString("yyyy-MM-dd") ?? "";
+        public string EndDateFormatted   => EndDate?.ToString("yyyy-MM-dd") ?? "";
         public ObservableCollection<ProductViewModel> Products
         {
             get => _products;
@@ -40,17 +74,24 @@ namespace MSM.ViewModels
         public ICommand DeleteProductCommand { get; }
         public ICommand SearchCommand { get; }
 
+        public ICommand ExportReportCommand { get; }
+        
         public event Func<EditProductViewModel, Task<Product?>>? ShowEditProductWindow;
         public event Func<ReduceStockViewModel, Task<int?>>? ShowReduceStockWindow;
         public event Func<AddProductViewModel, Task<Product?>>? ShowAddProductWindow;
+        public event PropertyChangedEventHandler? PropertyChanged;
+        protected void OnPropertyChanged([CallerMemberName] string propertyName = null)
+            => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
 
-        public MainWindowViewModel(IStockService stockService)
+        public MainWindowViewModel(IStockService stockService, Window owner)
         {
             _stockService = stockService;
             _barcode = string.Empty;
             _message = string.Empty;
             _products = new ObservableCollection<ProductViewModel>();
+            _owner = owner;
 
+            ExportReportCommand = new AsyncRelayCommand(ExportReportAsync); 
             
             EditProductCommand = new AsyncRelayCommand(async parameter =>
             {
@@ -134,6 +175,22 @@ namespace MSM.ViewModels
             });
 
             LoadProducts();
+        }
+        
+        private async Task ExportReportAsync(object? parameter)
+        {
+            var dlg = new SaveFileDialog
+            {
+                Title = "재고 보고서 저장",
+                Filters = { new FileDialogFilter { Name = "Excel Files", Extensions = { "xlsx" } } },
+                InitialFileName = $"StockReport_{DateTime.Now:yyyyMMdd_HHmmss}.xlsx"
+            };
+
+            var result = await dlg.ShowAsync(_owner); // _owner는 MainWindow
+            if (!string.IsNullOrEmpty(result))
+            {
+                _stockService.ExportStockReport(result);
+            }
         }
 
         public void LoadProducts()

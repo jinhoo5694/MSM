@@ -84,7 +84,7 @@ namespace MSM.ViewModels
                 DefaultReductionAmount = DefaultReductionAmount
             };
             
-            _stockService.AddProduct(newProduct);
+            // _stockService.AddProduct(newProduct);
 
             CloseWindow(newProduct);
         }
