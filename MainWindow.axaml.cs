@@ -9,48 +9,62 @@ using System;
 using System.Threading.Tasks;
 using Avalonia.Input;
 using Avalonia.Threading;
+using Path = System.IO.Path;
 
 namespace MSM
 {
     public partial class MainWindow : Window
     {
         private TextBox? _barcodeTextBox;
-        private Button? _searchButton;
         private TextBlock? _messageTextBlock;
         private ItemsControl? _productsItemsControl;
+        private readonly IStockService _stockService;
+        private readonly DispatcherTimer _autoSaveTimer;
+        private string? _autoSaveDirectory;
 
         public MainWindow()
         {
             InitializeComponent();
-            // For design time
+
+            _barcodeTextBox = this.FindControl<TextBox>("BarcodeTextBox");
+            _messageTextBlock = this.FindControl<TextBlock>("MessageTextBlock");
+            _productsItemsControl = this.FindControl<ItemsControl>("ProductsItemsControl");
+            var startPicker = this.FindControl<DatePicker>("StartDatePicker");
+            var endPicker = this.FindControl<DatePicker>("EndDatePicker");
+
+            if (startPicker != null)
+                startPicker.SelectedDateChanged += OnDateChanged;
+
+            if (endPicker != null)
+                endPicker.SelectedDateChanged += OnDateChanged;
+            // StockService를 한 번만 생성해서 ViewModel과 공유
+            _stockService = new StockService("stock.xlsx");
+
             if (Design.IsDesignMode)
             {
-                DataContext = new MainWindowViewModel(new StockService());
+                DataContext = new MainWindowViewModel(_stockService, this);
             }
             else
             {
-                // In a real application, you'd likely use a DI container to inject IStockService
-                // For simplicity, we'll create it directly here.
-                DataContext = new MainWindowViewModel(new StockService());
+                DataContext = new MainWindowViewModel(_stockService, this);
                 this.Opened += (_, _) =>
                 {
                     _barcodeTextBox?.Focus();
                 };
             }
 
-            _barcodeTextBox = this.FindControl<TextBox>("BarcodeTextBox");
-            _searchButton = this.FindControl<Button>("SearchButton");
-            _messageTextBlock = this.FindControl<TextBlock>("MessageTextBlock");
-            _productsItemsControl = this.FindControl<ItemsControl>("ProductsItemsControl");
-
-            _searchButton!.Click += SearchButton_Click;
+            _autoSaveTimer = new DispatcherTimer
+            {
+                Interval = TimeSpan.FromMinutes(1)
+            };
+            _autoSaveTimer.Tick += AutoSaveTimer_Tick;
+            _autoSaveTimer.Start();
 
             if (DataContext is MainWindowViewModel viewModel)
             {
                 viewModel.ShowEditProductWindow += async editViewModel =>
                 {
-                    var dialog = new EditProductWindow();
-                    dialog.DataContext = editViewModel;
+                    var dialog = new EditProductWindow { DataContext = editViewModel };
                     var result = await dialog.ShowDialog<Product>(this);
                     if (result != null)
                     {
@@ -62,8 +76,7 @@ namespace MSM
 
                 viewModel.ShowAddProductWindow += async addViewModel =>
                 {
-                    var dialog = new AddProductWindow();
-                    dialog.DataContext = addViewModel;
+                    var dialog = new AddProductWindow { DataContext = addViewModel };
                     var result = await dialog.ShowDialog<Product>(this);
                     _barcodeTextBox?.Focus();
                     return result;
@@ -71,12 +84,54 @@ namespace MSM
 
                 viewModel.ShowReduceStockWindow += async reduceViewModel =>
                 {
-                    var dialog = new ReduceStockWindow();
-                    dialog.DataContext = reduceViewModel;
+                    var dialog = new ReduceStockWindow { DataContext = reduceViewModel };
                     var result = await dialog.ShowDialog<int?>(this);
                     _barcodeTextBox?.Focus();
                     return result;
                 };
+            }
+        }
+
+        private void AutoSaveTimer_Tick(object? sender, EventArgs e)
+        {
+            var now = DateTime.Now;
+            if (_autoSaveDirectory != null && now.Hour == 2 && now.Minute == 0)
+            {
+                string fileName = $"StockReport_{now:yyyyMMdd_HHmmss}.xlsx";
+                string path = Path.Combine(_autoSaveDirectory, fileName);
+                _stockService.ExportStockReport(path);
+            }
+        }
+
+        private async void OnExportReportClick(object? sender, RoutedEventArgs e)
+        {
+            await ExportReportManualAsync();
+        }
+
+        public async Task ExportReportManualAsync()
+        {
+            var sfd = new SaveFileDialog
+            {
+                Title = "재고 보고서 저장",
+                Filters = { new FileDialogFilter { Name = "Excel Files", Extensions = { "xlsx" } } },
+                InitialFileName = $"StockReport_{DateTime.Now:yyyyMMdd_HHmmss}.xlsx"
+            };
+
+            var result = await sfd.ShowAsync(this);
+            if (!string.IsNullOrEmpty(result))
+            {
+                _stockService.ExportStockReport(result);
+                _autoSaveDirectory = Path.GetDirectoryName(result);
+
+                try { this.Activate(); } catch { /* 무시 */ }
+
+                await Dispatcher.UIThread.InvokeAsync(async () =>
+                {
+                    await Task.Delay(50);
+                    _barcodeTextBox?.Focus();
+                    if (_barcodeTextBox != null)
+                        _barcodeTextBox.CaretIndex = _barcodeTextBox.Text?.Length ?? 0;
+                }, DispatcherPriority.Background);
             }
         }
 
@@ -85,16 +140,6 @@ namespace MSM
             AvaloniaXamlLoader.Load(this);
         }
 
-        private async void SearchButton_Click(object sender, RoutedEventArgs e)
-        {
-            if (DataContext is MainWindowViewModel viewModel)
-            {
-                                viewModel.Barcode = _barcodeTextBox!.Text;
-                viewModel.SearchCommand.Execute(null);
-                _messageTextBlock!.Text = viewModel.Message;
-            }
-        }
-        
         private void BarcodeTextBox_KeyUp(object? sender, KeyEventArgs e)
         {
             if (e.Key == Key.Enter)
@@ -106,15 +151,24 @@ namespace MSM
                         vm.SearchCommand.Execute(null);
                     }
                 }
-                
+
                 Dispatcher.UIThread.Post(() =>
                 {
                     _barcodeTextBox?.Focus();
                 }, DispatcherPriority.Background);
 
-                // 포커스 유지
                 _barcodeTextBox?.Focus();
             }
         }
+        private void OnDateChanged(object? sender, DatePickerSelectedValueChangedEventArgs e)
+        {
+            Dispatcher.UIThread.Post(() =>
+            {
+                _barcodeTextBox?.Focus();
+                if (_barcodeTextBox != null)
+                    _barcodeTextBox.CaretIndex = _barcodeTextBox.Text?.Length ?? 0;
+            }, DispatcherPriority.Background);
+        }
+
     }
 }

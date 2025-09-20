@@ -61,7 +61,19 @@ namespace MSM.ViewModels
             }
         }
 
-
+        private int _quantity;
+        public int Quantity
+        {
+            get => _quantity;
+            set
+            {
+                if (_quantity != value)
+                {
+                    _quantity = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
         public ICommand SaveCommand { get; }
         public ICommand CancelCommand { get; }
         public ICommand BrowseImageCommand { get; }
@@ -76,7 +88,8 @@ namespace MSM.ViewModels
             _name = product.Name ?? string.Empty;
             _defaultReductionAmount = product.DefaultReductionAmount;
             _imagePath = product.ImagePath ?? string.Empty;
-
+            _quantity = product.Quantity;
+            
             SaveCommand = new AsyncRelayCommand(async _ => await Save(), _ => !string.IsNullOrWhiteSpace(Name) && DefaultReductionAmount > 0);
             CancelCommand = new AsyncRelayCommand(async _ => await Cancel());
             BrowseImageCommand = new AsyncRelayCommand(async _ => await BrowseImage());
@@ -88,7 +101,8 @@ namespace MSM.ViewModels
             _originalProduct.Name = Name;
             _originalProduct.DefaultReductionAmount = DefaultReductionAmount;
             _originalProduct.ImagePath = ImagePath;
-
+            _originalProduct.Quantity = Quantity;
+            
             _stockService.UpdateProduct(_originalProduct);
 
             CloseWindow(_originalProduct);
