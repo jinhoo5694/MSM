@@ -1,8 +1,10 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using MSM.Models;
 using OfficeOpenXml;
+using LicenseContext = System.ComponentModel.LicenseContext;
 
 namespace MSM.Services
 {
@@ -11,189 +13,294 @@ namespace MSM.Services
         private readonly string _filePath;
         private const string WorksheetName = "Products";
 
-        public StockService()
-        {
-            ExcelPackage.License.SetNonCommercialPersonal("Personal Use");
-            _filePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Data", "stock.xlsx");
-            InitializeDatabase();
-        }
+        // 변경 로그를 메모리에 저장
+        private readonly List<StockChangeLog> _changeLogs = new();
 
-        private void InitializeDatabase()
+
+        private readonly string _logFilePath = Path.Combine(AppContext.BaseDirectory, "stock_logs.json");
+
+        public class StockChangeLog
         {
-            var directory = Path.GetDirectoryName(_filePath);
-            if (!Directory.Exists(directory))
+            public DateTime Time { get; set; }
+            public string Barcode { get; set; }
+            public string Name { get; set; }
+            public int OldQty { get; set; }
+            public int NewQty { get; set; }
+            public string Reason { get; set; }
+        }
+        
+        public StockService(string filePath)
+        {
+            _filePath = filePath;
+
+            if (!File.Exists(_filePath))
             {
-                Directory.CreateDirectory(directory);
+                using var package = new ExcelPackage(new FileInfo(_filePath));
+                var ws = package.Workbook.Worksheets.Add(WorksheetName);
+                ws.Cells[1, 1].Value = "Barcode";
+                ws.Cells[1, 2].Value = "Name";
+                ws.Cells[1, 3].Value = "Quantity";
+                ws.Cells[1, 4].Value = "DefaultReductionAmount";
+                ws.Cells[1, 5].Value = "ImagePath";
+                package.Save();
             }
 
-            var fileInfo = new FileInfo(_filePath);
-            if (!fileInfo.Exists)
+            if (File.Exists(_logFilePath))
             {
-                using (var package = new ExcelPackage(fileInfo))
+                var lines = File.ReadAllLines(_logFilePath);
+                foreach (var line in lines)
                 {
-                    var worksheet = package.Workbook.Worksheets.Add(WorksheetName);
-                    worksheet.Cells[1, 1].Value = "Barcode";
-                    worksheet.Cells[1, 2].Value = "Name";
-                    worksheet.Cells[1, 3].Value = "Quantity";
-                    worksheet.Cells[1, 4].Value = "ImagePath";
-                    worksheet.Cells[1, 5].Value = "DefaultReductionAmount";
-                    
-                    // Add sample data
-                    worksheet.Cells[2, 1].Value = "12345";
-                    worksheet.Cells[2, 2].Value = "Product A";
-                    worksheet.Cells[2, 3].Value = 10;
-                    worksheet.Cells[2, 4].Value = "avares://MSM/Assets/product_a.png"; // Example image path
-                    worksheet.Cells[2, 5].Value = 1;
-                    
-                    worksheet.Cells[3, 1].Value = "67890";
-                    worksheet.Cells[3, 2].Value = "Product B";
-                    worksheet.Cells[3, 3].Value = 20;
-                    worksheet.Cells[3, 4].Value = "avares://MSM/Assets/product_b.png"; // Example image path
-                    worksheet.Cells[3, 5].Value = 5;
-                    
-                    package.Save();
+                    try
+                    {
+                        var log = System.Text.Json.JsonSerializer.Deserialize<StockChangeLog>(line);
+                        if (log != null) _changeLogs.Add(log);
+                    }
+                    catch
+                    {
+                        // 무시
+                    }
                 }
             }
         }
 
         public Product GetProductByBarcode(string barcode)
         {
-            using (var package = new ExcelPackage(new FileInfo(_filePath)))
-            {
-                var worksheet = package.Workbook.Worksheets[WorksheetName];
-                if (worksheet == null) return null;
+            using var package = new ExcelPackage(new FileInfo(_filePath));
+            var ws = package.Workbook.Worksheets[WorksheetName];
+            if (ws == null) return null;
 
-                for (int row = 2; row <= worksheet.Dimension.End.Row; row++)
+            for (int row = 2; row <= ws.Dimension.End.Row; row++)
+            {
+                if (ws.Cells[row, 1].Text.Equals(barcode, StringComparison.OrdinalIgnoreCase))
                 {
-                    if (worksheet.Cells[row, 1].Text.Equals(barcode, System.StringComparison.OrdinalIgnoreCase))
+                    return new Product
                     {
-                        return new Product
-                        {
-                            Barcode = worksheet.Cells[row, 1].Text,
-                            Name = worksheet.Cells[row, 2].Text,
-                            Quantity = int.TryParse(worksheet.Cells[row, 3].Text, out var quantity) ? quantity : 0,
-                            ImagePath = worksheet.Cells[row, 4].Text,
-                            DefaultReductionAmount = int.TryParse(worksheet.Cells[row, 5].Text, out var defaultReductionAmount) ? defaultReductionAmount : 1
-                        };
-                    }
+                        Barcode = ws.Cells[row, 1].Text,
+                        Name = ws.Cells[row, 2].Text,
+                        Quantity = int.TryParse(ws.Cells[row, 3].Text, out var q) ? q : 0,
+                        DefaultReductionAmount = int.TryParse(ws.Cells[row, 4].Text, out var d) ? d : 1,
+                        ImagePath = ws.Cells[row, 5].Text
+                    };
                 }
             }
+
             return null;
         }
 
-        public void UpdateStock(string barcode, int quantity)
-        {            
-            using (var package = new ExcelPackage(new FileInfo(_filePath)))
-            {
-                var worksheet = package.Workbook.Worksheets[WorksheetName];
-                if (worksheet == null) return;
+        public IEnumerable<Product> GetAllProducts()
+        {
+            var products = new List<Product>();
+            using var package = new ExcelPackage(new FileInfo(_filePath));
+            var ws = package.Workbook.Worksheets[WorksheetName];
+            if (ws == null) return products;
 
-                for (int row = 2; row <= worksheet.Dimension.End.Row; row++)
+            for (int row = 2; row <= ws.Dimension.End.Row; row++)
+            {
+                if (string.IsNullOrWhiteSpace(ws.Cells[row, 1].Text)) continue;
+
+                products.Add(new Product
                 {
-                    if (worksheet.Cells[row, 1].Text.Equals(barcode, System.StringComparison.OrdinalIgnoreCase))
-                    {
-                        worksheet.Cells[row, 3].Value = quantity;
-                        package.Save();
-                        return;
-                    }
-                }
+                    Barcode = ws.Cells[row, 1].Text,
+                    Name = ws.Cells[row, 2].Text,
+                    Quantity = int.TryParse(ws.Cells[row, 3].Text, out var q) ? q : 0,
+                    DefaultReductionAmount = int.TryParse(ws.Cells[row, 4].Text, out var d) ? d : 1,
+                    ImagePath = ws.Cells[row, 5].Text
+                });
             }
+
+            return products;
         }
+
 
         public void AddProduct(Product product)
         {
-            using (var package = new ExcelPackage(new FileInfo(_filePath)))
-            {
-                var worksheet = package.Workbook.Worksheets[WorksheetName];
-                var row = worksheet.Dimension.End.Row + 1;
+            using var package = new ExcelPackage(new FileInfo(_filePath));
+            var ws = package.Workbook.Worksheets[WorksheetName];
 
-                worksheet.Cells[row, 1].Value = product.Barcode;
-                worksheet.Cells[row, 2].Value = product.Name;
-                worksheet.Cells[row, 3].Value = product.Quantity;
-                worksheet.Cells[row, 4].Value = product.ImagePath;
-                worksheet.Cells[row, 5].Value = product.DefaultReductionAmount;
+            int row = ws.Dimension?.End.Row + 1 ?? 2;
+            ws.Cells[row, 1].Value = product.Barcode;
+            ws.Cells[row, 2].Value = product.Name;
+            ws.Cells[row, 3].Value = product.Quantity;
+            ws.Cells[row, 4].Value = product.DefaultReductionAmount;
+            ws.Cells[row, 5].Value = product.ImagePath;
+            package.Save();
 
-                package.Save();
-            }
+            RecordStockChange(product.Barcode, 0, product.Quantity, "AddProduct");
         }
 
         public void UpdateProduct(Product product)
         {
-            using (var package = new ExcelPackage(new FileInfo(_filePath)))
-            {
-                var worksheet = package.Workbook.Worksheets[WorksheetName];
-                if (worksheet == null) return;
+            using var package = new ExcelPackage(new FileInfo(_filePath));
+            var ws = package.Workbook.Worksheets[WorksheetName];
+            if (ws == null) return;
 
-                for (int row = 2; row <= worksheet.Dimension.End.Row; row++)
+            for (int row = 2; row <= ws.Dimension.End.Row; row++)
+            {
+                if (ws.Cells[row, 1].Text.Equals(product.Barcode, StringComparison.OrdinalIgnoreCase))
                 {
-                    if (worksheet.Cells[row, 1].Text.Equals(product.Barcode, System.StringComparison.OrdinalIgnoreCase))
-                    {
-                        worksheet.Cells[row, 2].Value = product.Name;
-                        worksheet.Cells[row, 3].Value = product.Quantity; // Quantity might not be updated from edit screen, but keep for consistency
-                        worksheet.Cells[row, 4].Value = product.ImagePath;
-                        worksheet.Cells[row, 5].Value = product.DefaultReductionAmount;
-                        package.Save();
-                        return;
-                    }
+                    int oldQty = int.TryParse(ws.Cells[row, 3].Text, out var q) ? q : 0;
+
+                    ws.Cells[row, 2].Value = product.Name;
+                    ws.Cells[row, 3].Value = product.Quantity;
+                    ws.Cells[row, 4].Value = product.DefaultReductionAmount;
+                    ws.Cells[row, 5].Value = product.ImagePath;
+                    package.Save();
+
+                    RecordStockChange(product.Barcode, oldQty, product.Quantity, "UpdateProduct");
+                    return;
+                }
+            }
+        }
+
+        public void UpdateStock(string barcode, int quantity)
+        {
+            using var package = new ExcelPackage(new FileInfo(_filePath));
+            var ws = package.Workbook.Worksheets[WorksheetName];
+            if (ws == null) return;
+
+            for (int row = 2; row <= ws.Dimension.End.Row; row++)
+            {
+                if (ws.Cells[row, 1].Text.Equals(barcode, StringComparison.OrdinalIgnoreCase))
+                {
+                    int oldQty = int.TryParse(ws.Cells[row, 3].Text, out var q) ? q : 0;
+
+                    ws.Cells[row, 3].Value = quantity;
+                    package.Save();
+
+                    string name = ws.Cells[row, 2].Text;
+                    RecordStockChange(barcode, oldQty, quantity, "UpdateStock");
+                    return;
+                }
+            }
+        }
+
+        public void DeleteProduct(string barcode)
+        {
+            using var package = new ExcelPackage(new FileInfo(_filePath));
+            var ws = package.Workbook.Worksheets[WorksheetName];
+            if (ws == null) return;
+
+            for (int row = 2; row <= ws.Dimension.End.Row; row++)
+            {
+                if (ws.Cells[row, 1].Text.Equals(barcode, StringComparison.OrdinalIgnoreCase))
+                {
+                    int oldQty = int.TryParse(ws.Cells[row, 3].Text, out var q) ? q : 0;
+                    string name = ws.Cells[row, 2].Text;
+
+                    ws.DeleteRow(row);
+                    package.Save();
+
+                    RecordStockChange(barcode, oldQty, 0, "DeleteProduct");
+                    return;
                 }
             }
         }
 
         public void SaveProducts(IEnumerable<Product> products)
         {
-            using (var package = new ExcelPackage(new FileInfo(_filePath)))
-            {
-                var worksheet = package.Workbook.Worksheets[WorksheetName];
-                if (worksheet == null)
-                {
-                    worksheet = package.Workbook.Worksheets.Add(WorksheetName);
-                    worksheet.Cells[1, 1].Value = "Barcode";
-                    worksheet.Cells[1, 2].Value = "Name";
-                    worksheet.Cells[1, 3].Value = "Quantity";
-                    worksheet.Cells[1, 4].Value = "ImagePath";
-                    worksheet.Cells[1, 5].Value = "DefaultReductionAmount";
-                }
-                else
-                {
-                    // Clear existing data, but keep header
-                    worksheet.Cells[2, 1, worksheet.Dimension.End.Row, worksheet.Dimension.End.Column].Clear();
-                }
+            using var package = new ExcelPackage(new FileInfo(_filePath));
+            var ws = package.Workbook.Worksheets[WorksheetName];
+            if (ws == null) return;
 
-                int row = 2;
-                foreach (var product in products)
-                {
-                    worksheet.Cells[row, 1].Value = product.Barcode;
-                    worksheet.Cells[row, 2].Value = product.Name;
-                    worksheet.Cells[row, 3].Value = product.Quantity;
-                    worksheet.Cells[row, 4].Value = product.ImagePath;
-                    worksheet.Cells[row, 5].Value = product.DefaultReductionAmount;
-                    row++;
-                }
-                package.Save();
+            ws.Cells.Clear();
+            ws.Cells[1, 1].Value = "Barcode";
+            ws.Cells[1, 2].Value = "Name";
+            ws.Cells[1, 3].Value = "Quantity";
+            ws.Cells[1, 4].Value = "DefaultReductionAmount";
+            ws.Cells[1, 5].Value = "ImagePath";
+
+            int row = 2;
+            foreach (var p in products)
+            {
+                ws.Cells[row, 1].Value = p.Barcode;
+                ws.Cells[row, 2].Value = p.Name;
+                ws.Cells[row, 3].Value = p.Quantity;
+                ws.Cells[row, 4].Value = p.DefaultReductionAmount;
+                ws.Cells[row, 5].Value = p.ImagePath;
+                row++;
             }
+
+            package.Save();
         }
 
-        public IEnumerable<Product> GetAllProducts()
+        // 로그 기록
+        public void RecordStockChange(string barcode, int oldQuantity, int newQuantity, string reason = "")
         {
-            var products = new List<Product>();
-            using (var package = new ExcelPackage(new FileInfo(_filePath)))
+            var product = GetProductByBarcode(barcode);
+            var log = new StockChangeLog
             {
-                var worksheet = package.Workbook.Worksheets[WorksheetName];
-                if (worksheet == null) return products;
+                Time = DateTime.Now,
+                Barcode = barcode,
+                Name = product?.Name ?? "",
+                OldQty = oldQuantity,
+                NewQty = newQuantity,
+                Reason = reason
+            };
+            _changeLogs.Add(log);
+            var json = System.Text.Json.JsonSerializer.Serialize(log);
+            File.AppendAllText(_logFilePath, json + Environment.NewLine);
 
-                for (int row = 2; row <= worksheet.Dimension.End.Row; row++)
+        }
+
+        // 보고서 내보내기
+        public void ExportStockReport(string filePath)
+        {
+            using var package = new ExcelPackage();
+
+            // 시트1: 현재 재고 현황
+            var ws1 = package.Workbook.Worksheets.Add("CurrentStock");
+            ws1.Cells[1, 1].Value = "Barcode";
+            ws1.Cells[1, 2].Value = "Name";
+            ws1.Cells[1, 3].Value = "Quantity";
+            ws1.Cells[1, 4].Value = "DefaultReductionAmount";
+
+            int r = 2;
+            foreach (var p in GetAllProducts())
+            {
+                ws1.Cells[r, 1].Value = p.Barcode;
+                ws1.Cells[r, 2].Value = p.Name;
+                ws1.Cells[r, 3].Value = p.Quantity;
+                ws1.Cells[r, 4].Value = p.DefaultReductionAmount;
+                r++;
+            }
+
+            // 시트2: 변경 로그
+            var ws2 = package.Workbook.Worksheets.Add("ChangeLogs");
+            ws2.Cells[1, 1].Value = "Time";
+            ws2.Cells[1, 2].Value = "Barcode";
+            ws2.Cells[1, 3].Value = "Name";
+            ws2.Cells[1, 4].Value = "OldQty";
+            ws2.Cells[1, 5].Value = "NewQty";
+            ws2.Cells[1, 6].Value = "Reason";
+
+            if (File.Exists(_logFilePath))
+            {
+                var lines = File.ReadAllLines(_logFilePath);
+                int r2 = 2;
+                foreach (var line in lines)
                 {
-                    products.Add(new Product
+                    try
                     {
-                        Barcode = worksheet.Cells[row, 1].Text,
-                        Name = worksheet.Cells[row, 2].Text,
-                        Quantity = int.TryParse(worksheet.Cells[row, 3].Text, out var quantity) ? quantity : 0,
-                        ImagePath = worksheet.Cells[row, 4].Text,
-                        DefaultReductionAmount = int.TryParse(worksheet.Cells[row, 5].Text, out var defaultReductionAmount) ? defaultReductionAmount : 1
-                    });
+                        var log = System.Text.Json.JsonSerializer.Deserialize<StockChangeLog>(line);
+                        if (log != null)
+                        {
+                            ws2.Cells[r2, 1].Value = log.Time.ToString("yyyy-MM-dd HH:mm:ss");
+                            ws2.Cells[r2, 2].Value = log.Barcode;
+                            ws2.Cells[r2, 3].Value = log.Name;
+                            ws2.Cells[r2, 4].Value = log.OldQty;
+                            ws2.Cells[r2, 5].Value = log.NewQty;
+                            ws2.Cells[r2, 6].Value = log.Reason;
+                            r2++;
+                        }
+                    }
+                    catch
+                    {
+                        // 잘못된 라인은 무시
+                    }
                 }
             }
-            return products;
+
+            package.SaveAs(new FileInfo(filePath));
         }
     }
 }
