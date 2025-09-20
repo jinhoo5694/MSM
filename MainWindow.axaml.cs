@@ -89,6 +89,16 @@ namespace MSM
                     _barcodeTextBox?.Focus();
                     return result;
                 };
+
+                viewModel.RequestFocusBarcode += () =>
+                {
+                    Dispatcher.UIThread.Post(() =>
+                    {
+                        _barcodeTextBox?.Focus();
+                        if (_barcodeTextBox != null)
+                            _barcodeTextBox.CaretIndex = +_barcodeTextBox.Text?.Length ?? 0;
+                    }, DispatcherPriority.Background);
+                };
             }
         }
 

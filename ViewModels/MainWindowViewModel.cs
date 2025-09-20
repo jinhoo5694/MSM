@@ -83,6 +83,8 @@ namespace MSM.ViewModels
         protected void OnPropertyChanged([CallerMemberName] string propertyName = null)
             => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
 
+        public event Action? RequestFocusBarcode;
+        
         public MainWindowViewModel(IStockService stockService, Window owner)
         {
             _stockService = stockService;
@@ -116,18 +118,14 @@ namespace MSM.ViewModels
                 }
             });
 
+            
             DeleteProductCommand = new RelayCommand(parameter =>
             {
                 if (parameter is ProductViewModel productViewModel)
                 {
-                    var products = _stockService.GetAllProducts().ToList();
-                    var productToDelete = products.FirstOrDefault(p => p.Barcode == productViewModel.Product.Barcode);
-                    if (productToDelete != null)
-                    {
-                        products.Remove(productToDelete);
-                        _stockService.SaveProducts(products);
-                        LoadProducts();
-                    }
+                    _stockService.DeleteProduct(productViewModel.Product.Barcode);
+                    LoadProducts();
+                    RequestFocusBarcode?.Invoke();
                 }
             });
 

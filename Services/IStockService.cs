@@ -13,5 +13,6 @@ namespace MSM.Services
         IEnumerable<Product> GetAllProducts();
         void RecordStockChange(string barcode, int oldQuantity, int newQuantity, string reason = "");
         void ExportStockReport(string filePath);
+        public void DeleteProduct(string barcode);
     }
 }
