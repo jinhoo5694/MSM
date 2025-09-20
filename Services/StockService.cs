@@ -176,21 +176,52 @@ namespace MSM.Services
 
         public void DeleteProduct(string barcode)
         {
+            // 안전 검사
+            if (string.IsNullOrWhiteSpace(barcode))
+                return;
+
             using var package = new ExcelPackage(new FileInfo(_filePath));
             var ws = package.Workbook.Worksheets[WorksheetName];
-            if (ws == null) return;
+            if (ws == null || ws.Dimension == null)
+                return;
 
+            // 찾기
             for (int row = 2; row <= ws.Dimension.End.Row; row++)
             {
-                if (ws.Cells[row, 1].Text.Equals(barcode, StringComparison.OrdinalIgnoreCase))
-                {
-                    int oldQty = int.TryParse(ws.Cells[row, 3].Text, out var q) ? q : 0;
-                    string name = ws.Cells[row, 2].Text;
+                var cellBarcode = ws.Cells[row, 1].Text;
+                if (string.IsNullOrWhiteSpace(cellBarcode))
+                    continue;
 
+                if (cellBarcode.Equals(barcode, StringComparison.OrdinalIgnoreCase))
+                {
+                    // 삭제 전 정보 수집
+                    int oldQty = int.TryParse(ws.Cells[row, 3].Text, out var q) ? q : 0;
+                    string name = ws.Cells[row, 2].Text ?? string.Empty;
+
+                    // 로그를 메모리/파일에 즉시 기록 (GetProductByBarcode 호출 불필요)
+                    var log = new StockChangeLog
+                    {
+                        Time = DateTime.Now,
+                        Barcode = barcode,
+                        Name = name,
+                        OldQty = oldQty,
+                        NewQty = 0,
+                        Reason = "DeleteProduct"
+                    };
+                    _changeLogs.Add(log);
+                    try
+                    {
+                        var json = System.Text.Json.JsonSerializer.Serialize(log);
+                        File.AppendAllText(_logFilePath, json + Environment.NewLine);
+                    }
+                    catch
+                    {
+                        // 파일 쓰기 실패는 무시하거나 로깅(예: Console.Error)해도 됩니다.
+                    }
+
+                    // 실제 행 삭제 및 저장
                     ws.DeleteRow(row);
                     package.Save();
-
-                    RecordStockChange(barcode, oldQty, 0, "DeleteProduct");
                     return;
                 }
             }
