@@ -21,6 +21,22 @@ namespace MSM.ViewModels
         private string _barcode;
         private string _message;
         private readonly Window _owner;
+
+        private bool _isDialogOpen;
+
+        public bool IsDialogOpen
+        {
+            get => _isDialogOpen;
+            set
+            {
+                if (_isDialogOpen != value)
+                {
+                    _isDialogOpen = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+        
         private DateTimeOffset? _startDate = DateTimeOffset.Now.AddDays(-7);
         public DateTimeOffset? StartDate
         {
@@ -84,6 +100,7 @@ namespace MSM.ViewModels
             => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
 
         public event Action? RequestFocusBarcode;
+        public event Func<string, Task>? ShowAlert;
         
         public MainWindowViewModel(IStockService stockService, Window owner)
         {
@@ -131,6 +148,7 @@ namespace MSM.ViewModels
 
             SearchCommand = new AsyncRelayCommand(async _ =>
             {
+                if (IsDialogOpen) return;
                 if (string.IsNullOrWhiteSpace(Barcode))
                 {
                     Message = "바코드를 스캔해주세요.";
@@ -140,18 +158,27 @@ namespace MSM.ViewModels
                 var product = _stockService.GetProductByBarcode(Barcode);
                 if (product != null)
                 {
-                    if (ShowReduceStockWindow != null)
+                    if (product.Quantity <= 0)
                     {
-                        var reduceStockViewModel = new ReduceStockViewModel(product);
-                        var newQuantity = await ShowReduceStockWindow.Invoke(reduceStockViewModel);
-
-                        if (newQuantity.HasValue)
-                        {
-                            _stockService.UpdateStock(product.Barcode, newQuantity.Value);
-                            Message = $"Stock for {product.Name} updated to {newQuantity.Value}.";
-                            LoadProducts();
-                        }
+                        if (ShowAlert != null)
+                            await ShowAlert.Invoke($"{product.Name}의 재고가 없습니다.");
                     }
+                    else
+                    {
+                        if (ShowReduceStockWindow != null)
+                        {
+                            var reduceStockViewModel = new ReduceStockViewModel(product);
+                            var newQuantity = await ShowReduceStockWindow.Invoke(reduceStockViewModel);
+
+                            if (newQuantity.HasValue)
+                            {
+                                _stockService.UpdateStock(product.Barcode, newQuantity.Value);
+                                Message = $"{product.Name}의 수량이 {newQuantity.Value}로 변경.";
+                                LoadProducts();
+                            }
+                        } 
+                    }
+                    
                 }
                 else
                 {
@@ -163,7 +190,7 @@ namespace MSM.ViewModels
                         if (newProduct != null)
                         {
                             _stockService.AddProduct(newProduct);
-                            Message = $"New product added: {newProduct.Name}";
+                            Message = $"새로운 상품 등록: {newProduct.Name}";
                             LoadProducts();
                         }
                     }
@@ -181,7 +208,7 @@ namespace MSM.ViewModels
             {
                 Title = "재고 보고서 저장",
                 Filters = { new FileDialogFilter { Name = "Excel Files", Extensions = { "xlsx" } } },
-                InitialFileName = $"StockReport_{DateTime.Now:yyyyMMdd_HHmmss}.xlsx"
+                InitialFileName = $"띵니 재고 관리 기록_{DateTime.Now:yyyyMMdd_HH:mm}.xlsx"
             };
 
             var result = await dlg.ShowAsync(_owner); // _owner는 MainWindow

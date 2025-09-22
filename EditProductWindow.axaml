@@ -23,7 +23,7 @@
             <Image Source="{Binding ProductImage}"
                    Width="100" Height="100" Stretch="UniformToFill"/>
             <TextBox Text="{Binding ImagePath, Mode=TwoWay}" IsReadOnly="True"/>
-            <Button Content="Browse..." Command="{Binding BrowseImageCommand}" />
+            <Button Content="이미지 탐색" Command="{Binding BrowseImageCommand}" />
         </StackPanel>
         <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="10" Margin="0,20,0,0">
             <Button Content="저장" Command="{Binding SaveCommand}"/>

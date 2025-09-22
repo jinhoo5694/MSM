@@ -7,6 +7,7 @@ using MSM.Models;
 using MSM.Views;
 using System;
 using System.Threading.Tasks;
+using Avalonia;
 using Avalonia.Input;
 using Avalonia.Threading;
 using Path = System.IO.Path;
@@ -64,8 +65,10 @@ namespace MSM
             {
                 viewModel.ShowEditProductWindow += async editViewModel =>
                 {
+                    viewModel.IsDialogOpen = true;
                     var dialog = new EditProductWindow { DataContext = editViewModel };
                     var result = await dialog.ShowDialog<Product>(this);
+                    viewModel.IsDialogOpen = false;
                     if (result != null)
                     {
                         viewModel.LoadProducts();
@@ -76,16 +79,20 @@ namespace MSM
 
                 viewModel.ShowAddProductWindow += async addViewModel =>
                 {
+                    viewModel.IsDialogOpen = true;
                     var dialog = new AddProductWindow { DataContext = addViewModel };
                     var result = await dialog.ShowDialog<Product>(this);
+                    viewModel.IsDialogOpen = false;
                     _barcodeTextBox?.Focus();
                     return result;
                 };
 
                 viewModel.ShowReduceStockWindow += async reduceViewModel =>
                 {
+                    viewModel.IsDialogOpen = true;
                     var dialog = new ReduceStockWindow { DataContext = reduceViewModel };
                     var result = await dialog.ShowDialog<int?>(this);
+                    viewModel.IsDialogOpen = false;
                     _barcodeTextBox?.Focus();
                     return result;
                 };
@@ -99,6 +106,43 @@ namespace MSM
                             _barcodeTextBox.CaretIndex = +_barcodeTextBox.Text?.Length ?? 0;
                     }, DispatcherPriority.Background);
                 };
+
+                viewModel.ShowAlert += async (message) =>
+                {
+                    var dlg = new Window
+                    {
+                        Title = "알림",
+                        Width = 300,
+                        Height = 150
+                    };
+
+                    var okButton = new Button
+                    {
+                        Content = "확인",
+                        HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center,
+                        Width = 60,
+                        Margin = new Thickness(0, 10, 0, 0)
+                    };
+
+                    okButton.Click += (_, __) => dlg.Close();
+
+                    dlg.Content = new StackPanel
+                    {
+                        Margin = new Thickness(10),
+                        Children =
+                        {
+                            new TextBlock { Text = message, Margin = new Thickness(0,0,0,10) },
+                            okButton
+                        }
+                    };
+
+                    await dlg.ShowDialog(this);
+
+                    // Alert 닫힌 뒤에도 SearchBox에 포커스 맞추기
+                    _barcodeTextBox?.Focus();
+                    if (_barcodeTextBox != null)
+                        _barcodeTextBox.CaretIndex = _barcodeTextBox.Text?.Length ?? 0;
+                };
             }
         }
 
@@ -107,7 +151,7 @@ namespace MSM
             var now = DateTime.Now;
             if (_autoSaveDirectory != null && now.Hour == 2 && now.Minute == 0)
             {
-                string fileName = $"StockReport_{now:yyyyMMdd_HHmmss}.xlsx";
+                string fileName = $"띵니_재고관리내역_{now:yyyyMMdd_HHmm}.xlsx";
                 string path = Path.Combine(_autoSaveDirectory, fileName);
                 _stockService.ExportStockReport(path);
             }
@@ -124,7 +168,7 @@ namespace MSM
             {
                 Title = "재고 보고서 저장",
                 Filters = { new FileDialogFilter { Name = "Excel Files", Extensions = { "xlsx" } } },
-                InitialFileName = $"StockReport_{DateTime.Now:yyyyMMdd_HHmmss}.xlsx"
+                InitialFileName = $"띵니_재고관리내역_{DateTime.Now:yyyyMMdd_HHmm}.xlsx"
             };
 
             var result = await sfd.ShowAsync(this);
