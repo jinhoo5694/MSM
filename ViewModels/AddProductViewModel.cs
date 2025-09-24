@@ -19,6 +19,8 @@ namespace MSM.ViewModels
         private int _quantity;
         private string _imagePath;
         private int _defaultReductionAmount;
+        private int _alertQuantity;
+        private int _safeQuantity;
 
         public string Barcode
         {
@@ -49,6 +51,18 @@ namespace MSM.ViewModels
             get => _defaultReductionAmount;
             set => SetAndRaiseIfChanged(ref _defaultReductionAmount, value);
         }
+        
+        public int AlertQuantity
+        {
+            get => _alertQuantity;
+            set => SetAndRaiseIfChanged(ref _alertQuantity, value);
+        }
+        
+        public int SafeQuantity
+        {
+            get => _safeQuantity;
+            set => SetAndRaiseIfChanged(ref _safeQuantity, value);
+        }
 
         public ICommand SaveCommand { get; }
         public ICommand CancelCommand { get; }
@@ -63,6 +77,8 @@ namespace MSM.ViewModels
             _barcode = barcode;
             _name = string.Empty;
             _quantity = 0;
+            _alertQuantity = 0;
+            _safeQuantity = 1;
             _imagePath = string.Empty;
             _defaultReductionAmount = 1;
             _stockService = stockService;
@@ -81,7 +97,9 @@ namespace MSM.ViewModels
                 Name = Name,
                 Quantity = Quantity,
                 ImagePath = ImagePath,
-                DefaultReductionAmount = DefaultReductionAmount
+                DefaultReductionAmount = DefaultReductionAmount,
+                AlertQuantity = AlertQuantity,
+                SafeQuantity = SafeQuantity,
             };
             
             // _stockService.AddProduct(newProduct);
