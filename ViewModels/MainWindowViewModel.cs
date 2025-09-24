@@ -130,6 +130,8 @@ namespace MSM.ViewModels
                             existingProductViewModel.Name = updatedProduct.Name;
                             existingProductViewModel.DefaultReductionAmount = updatedProduct.DefaultReductionAmount;
                             existingProductViewModel.ImagePath = updatedProduct.ImagePath;
+                            existingProductViewModel.AlertQuantity = updatedProduct.AlertQuantity;
+                            existingProductViewModel.SafeQuantity = updatedProduct.SafeQuantity;
                         }
                     }
                 }

@@ -6,7 +6,26 @@
              mc:Ignorable="d" d:DesignWidth="200" d:DesignHeight="250"
              x:Class="MSM.Views.ProductView"
              x:DataType="viewModels:ProductViewModel">
-    <Border BorderBrush="LightGray" BorderThickness="1" Margin="5" Padding="5">
+
+    <!-- 클래스 기반 스타일들 -->
+    <UserControl.Styles>
+        <Style Selector="Border.alert">
+            <Setter Property="BorderBrush" Value="Red"/>
+        </Style>
+        <Style Selector="Border.warning">
+            <Setter Property="BorderBrush" Value="#CC6600"/>
+        </Style>
+        <Style Selector="Border.safe">
+            <Setter Property="BorderBrush" Value="LightGray"/>
+        </Style>
+    </UserControl.Styles>
+
+    <!-- Border에 Classes 바인딩 -->
+    <Border Classes.alert="{Binding IsAlert}"
+            Classes.warning="{Binding IsWarning}"
+            Classes.safe="{Binding IsSafe}"
+            BorderThickness="2" Margin="5" Padding="5">
+
         <StackPanel Spacing="5">
             <Image Source="{Binding ProductImage}" Width="100" Height="100" Stretch="UniformToFill"/>
             <TextBlock Text="{Binding Name}" FontWeight="Bold"/>

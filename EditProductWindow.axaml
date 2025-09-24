@@ -6,7 +6,7 @@
         x:Class="MSM.EditProductWindow"
         Title="EditProductWindow"
         x:DataType="d:EditProductViewModel"
-        Height="500"
+        Height="600"
         Width="400">
     <Design.DataContext>
         <d:EditProductViewModel/>

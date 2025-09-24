@@ -33,9 +33,49 @@ namespace MSM.ViewModels
                 {
                     _product.Quantity = value;
                     OnPropertyChanged();
+                    OnPropertyChanged(nameof(IsAlert));
+                    OnPropertyChanged(nameof(IsWarning));
+                    OnPropertyChanged(nameof(IsSafe));
                 }
             }
         }
+        
+        public int AlertQuantity
+        {
+            get => _product.AlertQuantity;
+            set
+            {
+                if (_product.AlertQuantity != value)
+                {
+                    _product.AlertQuantity = value;
+                    OnPropertyChanged();
+                    OnPropertyChanged(nameof(IsAlert));
+                    OnPropertyChanged(nameof(IsWarning));
+                    OnPropertyChanged(nameof(IsSafe));
+                }
+            }
+        }
+        
+        public int SafeQuantity
+        {
+            get => _product.SafeQuantity;
+            set
+            {
+                if (_product.SafeQuantity != value)
+                {
+                    _product.SafeQuantity = value;
+                    OnPropertyChanged();
+                    OnPropertyChanged(nameof(IsAlert));
+                    OnPropertyChanged(nameof(IsWarning));
+                    OnPropertyChanged(nameof(IsSafe));
+                }
+            }
+        }
+        
+        public bool IsAlert => Quantity <= AlertQuantity;
+        public bool IsWarning => Quantity > AlertQuantity && Quantity < SafeQuantity;
+        public bool IsSafe => Quantity >= SafeQuantity;
+        
         public string ImagePath
         {
             get => _product.ImagePath;
@@ -47,6 +87,18 @@ namespace MSM.ViewModels
                     OnPropertyChanged();
                     UpdateProductImage();
                 }
+            }
+        }
+        
+        public string QuantityStatus
+        {
+            get
+            {
+                if (Quantity <= AlertQuantity)
+                    return "Alert";
+                if (Quantity < SafeQuantity)
+                    return "Warning";
+                return "Safe";
             }
         }
 
