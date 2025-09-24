@@ -110,7 +110,7 @@ namespace MSM.Services
                     DefaultReductionAmount = int.TryParse(ws.Cells[row, 4].Text, out var d) ? d : 1,
                     ImagePath = ws.Cells[row, 5].Text,
                     AlertQuantity = int.TryParse(ws.Cells[row, 6].Text, out var q2) ? q2 : 1,
-                    SafeQuantity = int.TryParse(ws.Cells[row, 7].Text, out var d2) ? d : 0,
+                    SafeQuantity = int.TryParse(ws.Cells[row, 7].Text, out var d2) ? d2 : 0,
                 });
             }
 
