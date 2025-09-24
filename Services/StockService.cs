@@ -42,6 +42,8 @@ namespace MSM.Services
                 ws.Cells[1, 3].Value = "Quantity";
                 ws.Cells[1, 4].Value = "DefaultReductionAmount";
                 ws.Cells[1, 5].Value = "ImagePath";
+                ws.Cells[1, 6].Value = "AlertQuantity";
+                ws.Cells[1, 7].Value = "SafeQuantity";
                 package.Save();
             }
 
@@ -79,7 +81,9 @@ namespace MSM.Services
                         Name = ws.Cells[row, 2].Text,
                         Quantity = int.TryParse(ws.Cells[row, 3].Text, out var q) ? q : 0,
                         DefaultReductionAmount = int.TryParse(ws.Cells[row, 4].Text, out var d) ? d : 1,
-                        ImagePath = ws.Cells[row, 5].Text
+                        ImagePath = ws.Cells[row, 5].Text,
+                        AlertQuantity = int.TryParse(ws.Cells[row, 6].Text, out var q2) ? q2 : 1,
+                        SafeQuantity = int.TryParse(ws.Cells[row, 7].Text, out var d2) ? d2 : 0,
                     };
                 }
             }
@@ -104,7 +108,9 @@ namespace MSM.Services
                     Name = ws.Cells[row, 2].Text,
                     Quantity = int.TryParse(ws.Cells[row, 3].Text, out var q) ? q : 0,
                     DefaultReductionAmount = int.TryParse(ws.Cells[row, 4].Text, out var d) ? d : 1,
-                    ImagePath = ws.Cells[row, 5].Text
+                    ImagePath = ws.Cells[row, 5].Text,
+                    AlertQuantity = int.TryParse(ws.Cells[row, 6].Text, out var q2) ? q2 : 1,
+                    SafeQuantity = int.TryParse(ws.Cells[row, 7].Text, out var d2) ? d : 0,
                 });
             }
 
@@ -123,6 +129,8 @@ namespace MSM.Services
             ws.Cells[row, 3].Value = product.Quantity;
             ws.Cells[row, 4].Value = product.DefaultReductionAmount;
             ws.Cells[row, 5].Value = product.ImagePath;
+            ws.Cells[row, 6].Value = product.AlertQuantity;
+            ws.Cells[row, 7].Value = product.SafeQuantity;
             package.Save();
 
             RecordStockChange(product.Barcode, 0, product.Quantity, "상품 추가");
@@ -144,6 +152,8 @@ namespace MSM.Services
                     ws.Cells[row, 3].Value = product.Quantity;
                     ws.Cells[row, 4].Value = product.DefaultReductionAmount;
                     ws.Cells[row, 5].Value = product.ImagePath;
+                    ws.Cells[row, 6].Value = product.AlertQuantity;
+                    ws.Cells[row, 7].Value = product.SafeQuantity;
                     package.Save();
 
                     RecordStockChange(product.Barcode, oldQty, product.Quantity, "상품 정보 변경");
@@ -239,6 +249,8 @@ namespace MSM.Services
             ws.Cells[1, 3].Value = "Quantity";
             ws.Cells[1, 4].Value = "DefaultReductionAmount";
             ws.Cells[1, 5].Value = "ImagePath";
+            ws.Cells[1, 6].Value = "AlertQuantity";
+            ws.Cells[1, 7].Value = "SafeQuantity";
 
             int row = 2;
             foreach (var p in products)
@@ -248,6 +260,8 @@ namespace MSM.Services
                 ws.Cells[row, 3].Value = p.Quantity;
                 ws.Cells[row, 4].Value = p.DefaultReductionAmount;
                 ws.Cells[row, 5].Value = p.ImagePath;
+                ws.Cells[row, 6].Value = p.AlertQuantity;
+                ws.Cells[row, 7].Value = p.SafeQuantity;
                 row++;
             }
 
@@ -284,6 +298,8 @@ namespace MSM.Services
             ws1.Cells[1, 2].Value = "상품명";
             ws1.Cells[1, 3].Value = "남은 재고 수량";
             ws1.Cells[1, 4].Value = "기본 차감 수량";
+            ws1.Cells[1, 5].Value = "경고 수량";
+            ws1.Cells[1, 6].Value = "안전 수량";
 
             int r = 2;
             foreach (var p in GetAllProducts())
@@ -292,6 +308,8 @@ namespace MSM.Services
                 ws1.Cells[r, 2].Value = p.Name;
                 ws1.Cells[r, 3].Value = p.Quantity;
                 ws1.Cells[r, 4].Value = p.DefaultReductionAmount;
+                ws1.Cells[r, 5].Value = p.AlertQuantity;
+                ws1.Cells[r, 6].Value = p.SafeQuantity;
                 r++;
             }
 
