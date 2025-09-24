@@ -7,5 +7,7 @@ namespace MSM.Models
         public int Quantity { get; set; }
         public string? ImagePath { get; set; }
         public int DefaultReductionAmount { get; set; } = 1; // Default to 1
+        public int AlertQuantity { get; set; } = 1;
+        public int SafeQuantity { get; set; } = 0;
     }
 }

@@ -24,8 +24,44 @@ namespace MSM.ViewModels
         public string Name
         {
             get => _name;
-            set { if (_name != value) { _name = value; OnPropertyChanged(); } }
+            set
+            {
+                if (_name != value)
+                {
+                    _name = value;
+                    OnPropertyChanged();
+                }
+            }
         }
+
+        private int _alertQuantity;
+        public int AlertQuantity
+        {
+            get => _alertQuantity;
+            set
+            {
+                if (_alertQuantity != value)
+                {
+                    _alertQuantity = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+        
+        private int _safeQuantity;
+        public int SafeQuantity
+        {
+            get => _safeQuantity;
+            set
+            {
+                if (_safeQuantity != value)
+                {
+                    _safeQuantity = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+        
         public int DefaultReductionAmount
         {
             get => _defaultReductionAmount;
@@ -89,6 +125,8 @@ namespace MSM.ViewModels
             _defaultReductionAmount = product.DefaultReductionAmount;
             _imagePath = product.ImagePath ?? string.Empty;
             _quantity = product.Quantity;
+            _alertQuantity = product.AlertQuantity;
+            _safeQuantity = product.SafeQuantity;
             
             SaveCommand = new AsyncRelayCommand(async _ => await Save(), _ => !string.IsNullOrWhiteSpace(Name) && DefaultReductionAmount > 0);
             CancelCommand = new AsyncRelayCommand(async _ => await Cancel());
@@ -102,6 +140,8 @@ namespace MSM.ViewModels
             _originalProduct.DefaultReductionAmount = DefaultReductionAmount;
             _originalProduct.ImagePath = ImagePath;
             _originalProduct.Quantity = Quantity;
+            _originalProduct.AlertQuantity = AlertQuantity;
+            _originalProduct.SafeQuantity = SafeQuantity;
             
             _stockService.UpdateProduct(_originalProduct);
 
