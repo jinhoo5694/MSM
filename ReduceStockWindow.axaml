@@ -8,18 +8,18 @@
         x:DataType="viewModels:ReduceStockViewModel"
         Title="Reduce Stock">
     <StackPanel Margin="20" Spacing="10">
-        <TextBlock Text="Product:"/>
+        <TextBlock Text="상품명"/>
         <TextBlock Text="{Binding Product.Name}" FontWeight="Bold"/>
 
-        <TextBlock Text="Current Quantity:"/>
+        <TextBlock Text="남은 재고 수량"/>
         <TextBlock Text="{Binding Product.Quantity}"/>
 
-        <TextBlock Text="Reduction Amount:"/>
+        <TextBlock Text="차감할 수량"/>
         <NumericUpDown Value="{Binding ReductionAmount}" Minimum="1" Maximum="{Binding Product.Quantity}"/>
 
         <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="10">
-            <Button Content="OK" Command="{Binding OkCommand}"/>
-            <Button Content="Cancel" Command="{Binding CancelCommand}"/>
+            <Button Content="차감하기" Command="{Binding OkCommand}"/>
+            <Button Content="취소" Command="{Binding CancelCommand}"/>
         </StackPanel>
     </StackPanel>
 </Window>
