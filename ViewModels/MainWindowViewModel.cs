@@ -147,7 +147,7 @@ namespace MSM.ViewModels
 
         public event Action? RequestFocusBarcode;
         public event Func<string, Task>? ShowAlert;
-        
+        public event Func<string, Task<bool>>? ShowConfirmation;
         public MainWindowViewModel(IStockService stockService, Window owner)
         {
             _stockService = stockService;
@@ -186,13 +186,28 @@ namespace MSM.ViewModels
             });
 
             
-            DeleteProductCommand = new RelayCommand(parameter =>
+            DeleteProductCommand = new AsyncRelayCommand(async parameter =>
             {
                 if (parameter is ProductViewModel productViewModel)
                 {
-                    _stockService.DeleteProduct(productViewModel.Product.Barcode);
-                    LoadProducts();
-                    RequestFocusBarcode?.Invoke();
+                    bool shouldDelete = true;
+        
+                    // 🚨 확인 요청 이벤트가 구독되어 있다면 호출
+                    if (ShowConfirmation != null)
+                    {
+                        // 사용자에게 메시지를 보여주고 응답을 기다립니다.
+                        shouldDelete = await ShowConfirmation.Invoke(
+                            $"{productViewModel.Name} (바코드: {productViewModel.Barcode}) 제품을 정말로 삭제하시겠습니까?"
+                        );
+                    }
+
+                    if (shouldDelete)
+                    {
+                        _stockService.DeleteProduct(productViewModel.Product.Barcode);
+                        Message = $"삭제 완료: {productViewModel.Name}";
+                        LoadProducts();
+                        RequestFocusBarcode?.Invoke();
+                    }
                 }
             });
 
