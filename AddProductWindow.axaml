@@ -3,32 +3,64 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:viewModels="clr-namespace:MSM.ViewModels"
-        mc:Ignorable="d" d:DesignWidth="400" d:DesignHeight="300"
+        mc:Ignorable="d" d:DesignWidth="400" d:DesignHeight="700"
         x:Class="MSM.AddProductWindow"
         x:DataType="viewModels:AddProductViewModel"
         Title="Add Product"
         Height="700"
         Width="400">
+     
     <StackPanel Margin="20" Spacing="10">
-        <TextBlock Text="상품명:" Margin="0,0,0,5"/>
+        <TextBlock Text="상품명"/>
         <TextBox Text="{Binding Name}" Width="360" Margin="0,0,0,10"/>
-
-        <TextBlock Text="재고 수량:" Margin="0,10,0,5"/>
-        <NumericUpDown Value="{Binding Quantity}"  Width="360" Margin="0,0,0,10"/>
-        
-        <TextBlock Text="1회 차감 수량:" Margin="0,10,0,5"/>
-        <NumericUpDown Value="{Binding DefaultReductionAmount}"  Width="360" Margin="0,0,0,10"/>
-
-        <TextBlock Text="안전 최소 수량:" Margin="0,0,0,5"/>
-        <NumericUpDown Value="{Binding SafeQuantity}"  Width="360" Margin="0,0,0,10"/>
-
-        <TextBlock Text="경고 최소 수량:" Margin="0,0,0,5"/>
-        <NumericUpDown Value="{Binding AlertQuantity}"  Width="360" Margin="0,0,0,10"/>
-
+        <StackPanel Orientation="Horizontal" Width="360" HorizontalAlignment="Center" Margin="0 0 0 10">
+            <StackPanel>
+                <TextBlock Text="재고 수량" Margin="0 0 0 5"/>
+                <NumericUpDown Value="{Binding Quantity}"
+                               Width="160"
+                               Margin="0 0 40 0"
+                               FormatString="0"
+                               Minimum="0"/>    
+            </StackPanel>
+           <StackPanel>
+               <TextBlock Text="1회 차감 수량" Margin="0 0 0 5"/>
+               <NumericUpDown Value="{Binding DefaultReductionAmount}"
+                              Width="160"
+                              FormatString="0"
+                              Minimum="0"/>   
+           </StackPanel> 
+        </StackPanel>
+      
+        <StackPanel Orientation="Horizontal" Width="360" HorizontalAlignment="Center" Margin="0 0 0 10">
+            <StackPanel>
+                <TextBlock Text="안전 최소 수량" Margin="0,0,0,5"/>
+                <NumericUpDown Value="{Binding SafeQuantity}"  Width="360" Margin="0,0,0,10"/>
+            </StackPanel>
+            <TextBlock Text="경고 최소 수량:" Margin="0,0,0,5"/>
+            <NumericUpDown Value="{Binding AlertQuantity}"  Width="360" Margin="0,0,0,10"/>
+        </StackPanel>
         <StackPanel>
-            <Image Source="{Binding ProductImage}" Width="100" Height="100" Stretch="UniformToFill"/>
-            <TextBox Text="{Binding ImagePath, Mode=TwoWay}" IsReadOnly="True"/>
-            <Button Content="이미지 탐색" Command="{Binding BrowseImageCommand}" />
+            <TextBlock Text="상품 이미지" />
+            <Grid Width="360">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="100"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+
+                <Image Grid.Column="0" 
+                       Source="{Binding ProductImage}" 
+                       Width="100" Height="100" 
+                       Stretch="UniformToFill" 
+                       HorizontalAlignment="Left"/>
+        
+                <Button Grid.Column="1"
+                        Content="이미지 탐색" 
+                        Command="{Binding BrowseImageCommand}"
+                        HorizontalAlignment="Right" 
+                        VerticalAlignment="Bottom"
+                />
+            </Grid> 
+            <TextBox Text="{Binding ImagePath, Mode=TwoWay}" IsReadOnly="True" IsVisible="False"/>
         </StackPanel>
 
         <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="10" Margin="0,20,0,0">
