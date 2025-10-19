@@ -63,10 +63,10 @@ namespace MSM
 
             if (DataContext is MainWindowViewModel viewModel)
             {
-                viewModel.ShowEditProductWindow += async editViewModel =>
+                viewModel.ShowEditAndReduceStockWindow += async editAndReduceViewModel =>
                 {
                     viewModel.IsDialogOpen = true;
-                    var dialog = new EditProductWindow { DataContext = editViewModel };
+                    var dialog = new EditAndReduceStockWindow { DataContext = editAndReduceViewModel };
                     var result = await dialog.ShowDialog<Product>(this);
                     viewModel.IsDialogOpen = false;
                     if (result != null)
@@ -82,16 +82,6 @@ namespace MSM
                     viewModel.IsDialogOpen = true;
                     var dialog = new AddProductWindow { DataContext = addViewModel };
                     var result = await dialog.ShowDialog<Product>(this);
-                    viewModel.IsDialogOpen = false;
-                    _barcodeTextBox?.Focus();
-                    return result;
-                };
-
-                viewModel.ShowReduceStockWindow += async reduceViewModel =>
-                {
-                    viewModel.IsDialogOpen = true;
-                    var dialog = new ReduceStockWindow { DataContext = reduceViewModel };
-                    var result = await dialog.ShowDialog<int?>(this);
                     viewModel.IsDialogOpen = false;
                     _barcodeTextBox?.Focus();
                     return result;
@@ -161,8 +151,20 @@ namespace MSM
         {
             await ExportReportManualAsync();
         }
+        
+        private async void OnExportAndCloseClick(object? sender, RoutedEventArgs e)
+        {
+            // 1. 저장 작업을 실행하고 성공 여부를 받습니다.
+            bool saveSuccessful = await ExportReportManualAsync();
 
-        public async Task ExportReportManualAsync()
+            // 2. 저장이 성공했을 경우에만 창을 닫아 프로그램을 종료합니다.
+            if (saveSuccessful)
+            {
+                this.Close();
+            }
+            // saveSuccessful이 false(취소)이면 아무것도 하지 않아 프로그램이 계속 실행됩니다.
+        }
+        public async Task<bool> ExportReportManualAsync()
         {
             var sfd = new SaveFileDialog
             {
@@ -174,6 +176,7 @@ namespace MSM
             var result = await sfd.ShowAsync(this);
             if (!string.IsNullOrEmpty(result))
             {
+                // 저장이 실제로 수행되었을 때
                 _stockService.ExportStockReport(result);
                 _autoSaveDirectory = Path.GetDirectoryName(result);
 
@@ -186,7 +189,13 @@ namespace MSM
                     if (_barcodeTextBox != null)
                         _barcodeTextBox.CaretIndex = _barcodeTextBox.Text?.Length ?? 0;
                 }, DispatcherPriority.Background);
+
+                // 저장이 성공했으므로 true 반환
+                return true; 
             }
+    
+            // 사용자가 취소했거나 경로가 유효하지 않을 때 false 반환
+            return false;
         }
 
         private void InitializeComponent()
@@ -221,6 +230,20 @@ namespace MSM
                 _barcodeTextBox?.Focus();
                 if (_barcodeTextBox != null)
                     _barcodeTextBox.CaretIndex = _barcodeTextBox.Text?.Length ?? 0;
+            }, DispatcherPriority.Background);
+        }
+        
+        private void ToggleButton_FocusBarcode(object? sender, RoutedEventArgs e)
+        {
+            // UI 스레드에서 백그라운드 우선순위로 포커스를 요청합니다.
+            // 이는 토글 상태 변경 처리가 끝난 후 포커스가 확실히 적용되도록 보장합니다.
+            Dispatcher.UIThread.Post(() =>
+            {
+                _barcodeTextBox?.Focus();
+                
+                // (선택 사항) 포커스가 들어갈 때 텍스트가 있다면 커서를 끝으로 이동시킵니다.
+                if (_barcodeTextBox != null)
+                    _barcodeTextBox.CaretIndex = _barcodeTextBox.Text?.Length ?? 0; 
             }, DispatcherPriority.Background);
         }
 

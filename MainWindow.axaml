@@ -5,33 +5,48 @@
         xmlns:local="clr-namespace:MSM"
         mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
         x:Class="MSM.MainWindow"
+        WindowState="FullScreen"
+        CanResize="False"
+        ExtendClientAreaToDecorationsHint="True"
+        ExtendClientAreaChromeHints="NoChrome"
         xmlns:viewModels="clr-namespace:MSM.ViewModels"
         xmlns:views="clr-namespace:MSM.Views"
         x:DataType="viewModels:MainWindowViewModel"
         Title="MSM">
+    
     <DockPanel>
-        <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Spacing="10" Margin="10">
-            <Button Content="재고 보고서 저장" Click="OnExportReportClick" />
+        
+        <StackPanel DockPanel.Dock="Bottom" 
+                    Orientation="Horizontal" 
+                    Spacing="10" 
+                    Margin="10"
+                    HorizontalAlignment="Right">
+            <Button Content="재고 보고서 저장" Click="OnExportReportClick" /> 
+            <Button Content="저장 후 종료" Click="OnExportAndCloseClick" />
         </StackPanel>
+        
         <StackPanel Margin="20">
-        <TextBox Name="BarcodeTextBox" Watermark="바코드 입력" Text="{Binding Barcode, UpdateSourceTrigger=PropertyChanged}" Focusable="True" KeyUp="BarcodeTextBox_KeyUp"/>
-        <Button Name="SearchButton" Content="검색" Margin="0,10,0,0" IsVisible="False" Command="{Binding SearchCommand}"/>
-        <TextBlock Name="MessageTextBlock" Margin="0,10,0,0" Text="{Binding Message}"/>
+            <StackPanel Orientation="Horizontal" Spacing="10" Margin="0,0,0,10">
+                <ToggleButton IsChecked="{Binding IsBarcodeScanningEnabled}" 
+                              Content="바코드 스캔 / 검색 전환"
+                              Checked="ToggleButton_FocusBarcode" 
+                              Unchecked="ToggleButton_FocusBarcode" />            </StackPanel>
+            <TextBox Name="BarcodeTextBox" Watermark="{Binding SearchWatermark}" Text="{Binding Barcode, UpdateSourceTrigger=PropertyChanged}" Focusable="True" KeyUp="BarcodeTextBox_KeyUp"/>
+            <Button Name="SearchButton" Content="검색" Margin="0,10,0,0" IsVisible="True" Command="{Binding SearchCommand}"/>
+            <TextBlock Name="MessageTextBlock" Margin="0,10,0,0" Text="{Binding Message}"/>
 
-        
-        
-        <ItemsControl x:Name="ProductsItemsControl" ItemsSource="{Binding Products}" Margin="0,20,0,0">
-            <ItemsControl.ItemsPanel>
-                <ItemsPanelTemplate>
-                    <WrapPanel Orientation="Horizontal" />
-                </ItemsPanelTemplate>
-            </ItemsControl.ItemsPanel>
-            <ItemsControl.ItemTemplate>
-                <DataTemplate DataType="viewModels:ProductViewModel">
-                    <views:ProductView />
-                </DataTemplate>
-            </ItemsControl.ItemTemplate>
-        </ItemsControl>
-    </StackPanel>
-        </DockPanel>
+            <ItemsControl x:Name="ProductsItemsControl" ItemsSource="{Binding Products}" Margin="0,20,0,0">
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <WrapPanel Orientation="Horizontal" />
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate DataType="viewModels:ProductViewModel">
+                        <views:ProductView />
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </StackPanel>
+    </DockPanel>
 </Window>
