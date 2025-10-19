@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
@@ -18,11 +19,30 @@ namespace MSM.ViewModels
     {
         private readonly IStockService _stockService;
         private ObservableCollection<ProductViewModel> _products;
+        private List<ProductViewModel> _allProducts; // Store all products
         private string _barcode;
         private string _message;
         private readonly Window _owner;
 
         private bool _isDialogOpen;
+
+        private bool _isBarcodeScanningEnabled = true;
+
+        public bool IsBarcodeScanningEnabled
+        {
+            get => _isBarcodeScanningEnabled;
+            set
+            {
+                if (SetAndRaiseIfChanged(ref _isBarcodeScanningEnabled, value))
+                {
+                    OnPropertyChanged(nameof(SearchWatermark));
+                    FilterProducts(); // Ensure filtering is updated when the mode changes
+                    Barcode = String.Empty;
+                }
+            }
+        }
+
+        public string SearchWatermark => IsBarcodeScanningEnabled ? "바코드 입력" : "상품명으로 검색";
 
         public bool IsDialogOpen
         {
@@ -32,7 +52,7 @@ namespace MSM.ViewModels
                 if (_isDialogOpen != value)
                 {
                     _isDialogOpen = value;
-                    OnPropertyChanged();
+                    OnPropertyChanged(nameof(IsDialogOpen));
                 }
             }
         }
@@ -46,7 +66,7 @@ namespace MSM.ViewModels
                 if (_startDate != value)
                 {
                     _startDate = value;
-                    OnPropertyChanged();
+                    OnPropertyChanged(nameof(StartDate));
                     OnPropertyChanged(nameof(StartDateFormatted));
                 }
             }
@@ -61,7 +81,7 @@ namespace MSM.ViewModels
                 if (_endDate != value)
                 {
                     _endDate = value;
-                    OnPropertyChanged();
+                    OnPropertyChanged(nameof(EndDate));
                     OnPropertyChanged(nameof(EndDateFormatted));
                 }
             }
@@ -77,7 +97,37 @@ namespace MSM.ViewModels
         public string Barcode
         {
             get => _barcode;
-            set => SetAndRaiseIfChanged(ref _barcode, value);
+            set
+            {
+                if (SetAndRaiseIfChanged(ref _barcode, value))
+                {
+                    if (!IsBarcodeScanningEnabled)
+                    {
+                        FilterProducts();
+                    }
+                }
+            }
+        }
+
+        private void FilterProducts()
+        {
+            if (string.IsNullOrWhiteSpace(Barcode) || IsBarcodeScanningEnabled)
+            {
+                Products.Clear();
+                foreach (var p in _allProducts)
+                {
+                    Products.Add(p);
+                }
+            }
+            else
+            {
+                var filtered = _allProducts.Where(p => p.Name.Contains(Barcode, StringComparison.OrdinalIgnoreCase)).ToList();
+                Products.Clear();
+                foreach (var p in filtered)
+                {
+                    Products.Add(p);
+                }
+            }
         }
 
         public string Message
@@ -92,12 +142,8 @@ namespace MSM.ViewModels
 
         public ICommand ExportReportCommand { get; }
         
-        public event Func<EditProductViewModel, Task<Product?>>? ShowEditProductWindow;
-        public event Func<ReduceStockViewModel, Task<int?>>? ShowReduceStockWindow;
+        public event Func<EditAndReduceStockViewModel, Task<Product?>>? ShowEditAndReduceStockWindow;
         public event Func<AddProductViewModel, Task<Product?>>? ShowAddProductWindow;
-        public event PropertyChangedEventHandler? PropertyChanged;
-        protected void OnPropertyChanged([CallerMemberName] string propertyName = null)
-            => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
 
         public event Action? RequestFocusBarcode;
         public event Func<string, Task>? ShowAlert;
@@ -108,18 +154,19 @@ namespace MSM.ViewModels
             _barcode = string.Empty;
             _message = string.Empty;
             _products = new ObservableCollection<ProductViewModel>();
+            _allProducts = new List<ProductViewModel>();
             _owner = owner;
 
             ExportReportCommand = new AsyncRelayCommand(ExportReportAsync); 
             
             EditProductCommand = new AsyncRelayCommand(async parameter =>
             {
-                if (parameter is ProductViewModel productViewModel && ShowEditProductWindow != null)
+                if (parameter is ProductViewModel productViewModel && ShowEditAndReduceStockWindow != null)
                 {
                     Product updatedProduct = await Dispatcher.UIThread.InvokeAsync(async () =>
                     {
-                        var editViewModel = new EditProductViewModel(productViewModel.Product, _stockService);
-                        return await ShowEditProductWindow.Invoke(editViewModel);
+                        var editViewModel = new EditAndReduceStockViewModel(productViewModel.Product, _stockService);
+                        return await ShowEditAndReduceStockWindow.Invoke(editViewModel);
                     });
 
                     if (updatedProduct != null)
@@ -128,6 +175,7 @@ namespace MSM.ViewModels
                         if (existingProductViewModel != null)
                         {
                             existingProductViewModel.Name = updatedProduct.Name;
+                            existingProductViewModel.Quantity = updatedProduct.Quantity;
                             existingProductViewModel.DefaultReductionAmount = updatedProduct.DefaultReductionAmount;
                             existingProductViewModel.ImagePath = updatedProduct.ImagePath;
                             existingProductViewModel.AlertQuantity = updatedProduct.AlertQuantity;
@@ -150,6 +198,8 @@ namespace MSM.ViewModels
 
             SearchCommand = new AsyncRelayCommand(async _ =>
             {
+                if (!IsBarcodeScanningEnabled) return;
+
                 if (IsDialogOpen) return;
                 if (string.IsNullOrWhiteSpace(Barcode))
                 {
@@ -160,27 +210,17 @@ namespace MSM.ViewModels
                 var product = _stockService.GetProductByBarcode(Barcode);
                 if (product != null)
                 {
-                    if (product.Quantity <= 0)
+                    if (ShowEditAndReduceStockWindow != null)
                     {
-                        if (ShowAlert != null)
-                            await ShowAlert.Invoke($"{product.Name}의 재고가 없습니다.");
-                    }
-                    else
-                    {
-                        if (ShowReduceStockWindow != null)
-                        {
-                            var reduceStockViewModel = new ReduceStockViewModel(product);
-                            var newQuantity = await ShowReduceStockWindow.Invoke(reduceStockViewModel);
+                        var editAndReduceStockViewModel = new EditAndReduceStockViewModel(product, _stockService);
+                        var updatedProduct = await ShowEditAndReduceStockWindow.Invoke(editAndReduceStockViewModel);
 
-                            if (newQuantity.HasValue)
-                            {
-                                _stockService.UpdateStock(product.Barcode, newQuantity.Value);
-                                Message = $"{product.Name}의 수량이 {newQuantity.Value}로 변경.";
-                                LoadProducts();
-                            }
-                        } 
+                        if (updatedProduct != null)
+                        {
+                            Message = $"{updatedProduct.Name}의 수량이 {updatedProduct.Quantity}로 변경.";
+                            LoadProducts();
+                        }
                     }
-                    
                 }
                 else
                 {
@@ -219,15 +259,18 @@ namespace MSM.ViewModels
                 _stockService.ExportStockReport(result);
             }
         }
+        
+        
 
         public void LoadProducts()
         {
             var products = _stockService.GetAllProducts();
-            Products.Clear();
+            _allProducts.Clear();
             foreach (var product in products ?? Enumerable.Empty<Product>())
             {
-                Products.Add(new ProductViewModel(product, EditProductCommand, DeleteProductCommand));
+                _allProducts.Add(new ProductViewModel(product, EditProductCommand, DeleteProductCommand));
             }
+            FilterProducts(); // This will apply the current filter
         }
         
        

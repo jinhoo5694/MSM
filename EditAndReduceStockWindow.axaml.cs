@@ -5,9 +5,9 @@ using MSM.Models;
 
 namespace MSM
 {
-    public partial class ReduceStockWindow : Window
+    public partial class EditAndReduceStockWindow : Window
     {
-        public ReduceStockWindow()
+        public EditAndReduceStockWindow()
         {
             InitializeComponent();
         }
