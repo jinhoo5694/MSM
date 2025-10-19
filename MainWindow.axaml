@@ -30,12 +30,23 @@
                 <ToggleButton IsChecked="{Binding IsBarcodeScanningEnabled}" 
                               Content="바코드 스캔 / 검색 전환"
                               Checked="ToggleButton_FocusBarcode" 
-                              Unchecked="ToggleButton_FocusBarcode" />            </StackPanel>
-            <TextBox Name="BarcodeTextBox" Watermark="{Binding SearchWatermark}" Text="{Binding Barcode, UpdateSourceTrigger=PropertyChanged}" Focusable="True" KeyUp="BarcodeTextBox_KeyUp"/>
+                              Unchecked="ToggleButton_FocusBarcode"
+                              Height="32"
+                              VerticalContentAlignment="Center"
+                              HorizontalContentAlignment="Center"/>
+                <TextBox Name="BarcodeTextBox"
+                         Watermark="{Binding SearchWatermark}"
+                         Text="{Binding Barcode, UpdateSourceTrigger=PropertyChanged}"
+                         Focusable="True"
+                         Width="500"
+                         KeyUp="BarcodeTextBox_KeyUp"
+                         IsVisible="True"/>
+            </StackPanel>
+            
             <Button Name="SearchButton" Content="검색" Margin="0,10,0,0" IsVisible="False" Command="{Binding SearchCommand}"/>
             <TextBlock Name="MessageTextBlock" Margin="0,10,0,0" Text="{Binding Message}"/>
 
-            <ItemsControl x:Name="ProductsItemsControl" ItemsSource="{Binding Products}" Margin="0,20,0,0">
+            <ItemsControl x:Name="ProductsItemsControl" ItemsSource="{Binding Products}">
                 <ItemsControl.ItemsPanel>
                     <ItemsPanelTemplate>
                         <WrapPanel Orientation="Horizontal" />

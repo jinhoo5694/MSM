@@ -2208,19 +2208,19 @@
     ]
   },
   "packageFolders": {
-    "C:\\Users\\jinho\\.nuget\\packages\\": {}
+    "/Users/gimjinhu/.nuget/packages/": {}
   },
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\jinho\\DEV\\MSM\\MSM.csproj",
+      "projectUniqueName": "/Users/gimjinhu/DEV/MSM/MSM.csproj",
       "projectName": "MSM",
-      "projectPath": "C:\\Users\\jinho\\DEV\\MSM\\MSM.csproj",
-      "packagesPath": "C:\\Users\\jinho\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\jinho\\DEV\\MSM\\obj\\",
+      "projectPath": "/Users/gimjinhu/DEV/MSM/MSM.csproj",
+      "packagesPath": "/Users/gimjinhu/.nuget/packages/",
+      "outputPath": "/Users/gimjinhu/DEV/MSM/obj/",
       "projectStyle": "PackageReference",
       "configFilePaths": [
-        "C:\\Users\\jinho\\AppData\\Roaming\\NuGet\\NuGet.Config"
+        "/Users/gimjinhu/.nuget/NuGet/NuGet.Config"
       ],
       "originalTargetFrameworks": [
         "net9.0"
@@ -2295,7 +2295,7 @@
             "privateAssets": "all"
           }
         },
-        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.305/PortableRuntimeIdentifierGraph.json"
+        "runtimeIdentifierGraphPath": "/Users/gimjinhu/.dotnet/sdk/9.0.305/PortableRuntimeIdentifierGraph.json"
       }
     }
   }
