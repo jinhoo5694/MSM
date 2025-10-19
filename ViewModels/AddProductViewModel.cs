@@ -21,10 +21,25 @@ namespace MSM.ViewModels
         public string Name
         {
             get => _name;
-            set => SetAndRaiseIfChanged(ref _name, value);
+            set
+            {
+                if (SetAndRaiseIfChanged(ref _name, value))
+                {
+                    // 🚨 Name이 변경될 때마다 SaveCommand의 실행 가능 상태를 다시 확인하도록 요청
+                    (SaveCommand as AsyncRelayCommand)?.RaiseCanExecuteChanged();
+                }
+            }
         }
 
         private int _defaultReductionAmount = 1;
+
+        private int _quantity;
+
+        public int Quantity
+        {
+            get => _quantity;
+            set => SetAndRaiseIfChanged(ref _quantity, value);
+        }
         public int DefaultReductionAmount
         {
             get => _defaultReductionAmount;
@@ -95,14 +110,14 @@ namespace MSM.ViewModels
             {
                 Barcode = Barcode,
                 Name = Name,
-                Quantity = 0, // Initial quantity is 0
+                Quantity = Quantity,
                 DefaultReductionAmount = DefaultReductionAmount,
                 AlertQuantity = AlertQuantity,
                 SafeQuantity = SafeQuantity,
                 ImagePath = ImagePath
             };
 
-            _stockService.AddProduct(newProduct);
+            // _stockService.AddProduct(newProduct);
             CloseWindow(newProduct);
         }
 
