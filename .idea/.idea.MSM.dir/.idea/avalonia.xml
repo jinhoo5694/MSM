@@ -5,6 +5,7 @@
       <map>
         <entry key="AddProductWindow.axaml" value="MSM.csproj" />
         <entry key="App.axaml" value="MSM.csproj" />
+        <entry key="EditAndReduceStockWindow.axaml" value="MSM.csproj" />
         <entry key="EditProductWindow.axaml" value="MSM.csproj" />
         <entry key="MainWindow.axaml" value="MSM.csproj" />
         <entry key="ProductView.axaml" value="MSM.csproj" />
