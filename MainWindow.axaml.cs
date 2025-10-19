@@ -133,6 +133,51 @@ namespace MSM
                     if (_barcodeTextBox != null)
                         _barcodeTextBox.CaretIndex = _barcodeTextBox.Text?.Length ?? 0;
                 };
+                
+                viewModel.ShowConfirmation += async (message) =>
+                {
+                    viewModel.IsDialogOpen = true; 
+                    
+                    var confirmationDialog = new Window
+                    {
+                        Title = "삭제 확인",
+                        Width = 400,
+                        Height = 150,
+                        CanResize = false
+                    };
+
+                    var yesButton = new Button { Content = "예", Width = 80, IsDefault = true }; // 기본 버튼으로 설정
+                    var noButton = new Button { Content = "아니오", Width = 80, IsCancel = true };
+                    
+                    bool result = false;
+
+                    yesButton.Click += (_, __) => { result = true; confirmationDialog.Close(); };
+                    noButton.Click += (_, __) => { result = false; confirmationDialog.Close(); };
+
+                    confirmationDialog.Content = new StackPanel
+                    {
+                        Margin = new Thickness(15),
+                        Children =
+                        {
+                            new TextBlock { Text = message, TextWrapping = Avalonia.Media.TextWrapping.Wrap },
+                            new StackPanel
+                            {
+                                Orientation = Avalonia.Layout.Orientation.Horizontal,
+                                HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Right,
+                                Spacing = 10,
+                                Margin = new Thickness(0, 20, 0, 0),
+                                Children = { yesButton, noButton }
+                            }
+                        }
+                    };
+
+                    await confirmationDialog.ShowDialog(this);
+                    
+                    viewModel.IsDialogOpen = false;
+                    _barcodeTextBox?.Focus();
+                    
+                    return result; // 사용자의 선택 반환
+                };
             }
         }
 
