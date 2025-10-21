@@ -209,6 +209,50 @@ namespace MSM
             }
             // saveSuccessful이 false(취소)이면 아무것도 하지 않아 프로그램이 계속 실행됩니다.
         }
+
+        private async  void OnCloseClick(object? sender, RoutedEventArgs e)
+        {
+            var confirmationDialog = new Window
+            {
+                Title = "프로그램 종료",
+                Width = 400,
+                Height = 150,
+                CanResize = false
+            };
+
+            var yesButton = new Button { Content = "예", Width = 80, IsDefault = true };
+            var noButton = new Button { Content = "아니오", Width = 80, IsCancel = true };
+
+            bool shouldClose = false;
+
+            yesButton.Click += (_, __) => { shouldClose = true; confirmationDialog.Close(); };
+            noButton.Click += (_, __) => { shouldClose = false; confirmationDialog.Close(); };
+
+            confirmationDialog.Content = new StackPanel
+            {
+                Margin = new Thickness(15),
+                Children =
+                {
+                    new TextBlock { Text = "종료하시겠습니까?", TextWrapping = Avalonia.Media.TextWrapping.Wrap },
+                    new StackPanel
+                    {
+                        Orientation = Avalonia.Layout.Orientation.Horizontal,
+                        HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Right,
+                        Spacing = 10,
+                        Margin = new Thickness(0, 20, 0, 0),
+                        Children = { yesButton, noButton }
+                    }
+                }
+            };
+
+            await confirmationDialog.ShowDialog(this);
+
+            // 사용자가 "예"를 눌렀을 때만 프로그램 종료
+            if (shouldClose)
+            {
+                this.Close();
+            }
+        }
         public async Task<bool> ExportReportManualAsync()
         {
             var sfd = new SaveFileDialog
