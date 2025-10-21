@@ -25,21 +25,26 @@
             Classes.warning="{Binding IsWarning}"
             Classes.safe="{Binding IsSafe}"
             BorderThickness="2" Margin="5" Padding="5"
-            Height="120"
-            Width="240">
+            Height="200"
+            Width="400">
 
-        <StackPanel Spacing="5" Orientation="Horizontal" Height="120" Width="220" Margin="10">
+        <StackPanel Spacing="5" Orientation="Horizontal" Height="200" Width="400">
             <Image Source="{Binding ProductImage}" 
-                   Width="100"
-                   Height="100"
+                   Width="180"
+                   Height="180"
                    Stretch="UniformToFill"
                    HorizontalAlignment="Center"
-                   VerticalAlignment="Center"/>
-            <Grid Width="100" Height="100">
-                <StackPanel Width="100" VerticalAlignment="Bottom">
-                    <TextBlock Text="{Binding Name}" FontWeight="Bold"/>
+                   VerticalAlignment="Center"
+                   Margin="10"/>
+            <Grid Width="190" Height="180">
+                <StackPanel VerticalAlignment="Top" Margin="0, 5, 0, 0"> 
+                    <TextBlock Text="{Binding Name}" 
+                               FontWeight="Bold"
+                               TextWrapping="Wrap"  />
                     <TextBlock Text="{Binding Quantity, StringFormat='남은 재고: {0}'}"/>
-                    <StackPanel Orientation="Horizontal">
+                </StackPanel>
+        
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0 0 10 0">
                     <Button 
                         x:Name="EditButton" 
                         Content="정보 수정" 
@@ -50,7 +55,6 @@
                         Content="삭제" 
                         Command="{Binding DeleteCommand}"
                         CommandParameter="{Binding .}"/>
-                    </StackPanel>
                 </StackPanel>
             </Grid>
         </StackPanel>

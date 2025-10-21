@@ -6,7 +6,8 @@
         x:Class="MSM.EditAndReduceStockWindow"
         x:DataType="d:EditAndReduceStockViewModel"
         Title="Edit and Reduce Stock"
-        MinHeight="800"> <StackPanel Margin="20" Spacing="10">
+        MinHeight="600"
+        Width="400"> <StackPanel Margin="20" Spacing="10">
         <TextBlock Text="상품명:" Margin="0,0,0,5"/>
         <TextBox Text="{Binding Name}" Width="360" Margin="0,0,0,10"/>
 
