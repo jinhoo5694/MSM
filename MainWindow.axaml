@@ -23,6 +23,7 @@
                     HorizontalAlignment="Right">
             <Button Content="재고 보고서 저장" Click="OnExportReportClick" /> 
             <Button Content="저장 후 종료" Click="OnExportAndCloseClick" />
+            <Button Content="강제 종료" Click="OnCloseClick" />
         </StackPanel>
         
         <StackPanel Margin="20">
@@ -40,7 +41,7 @@
                          Focusable="True"
                          Width="500"
                          KeyUp="BarcodeTextBox_KeyUp"
-                         IsVisible="True"/>
+                         IsVisible="{Binding !IsBarcodeScanningEnabled}"/>
             </StackPanel>
             
             <Button Name="SearchButton" Content="검색" Margin="0,10,0,0" IsVisible="False" Command="{Binding SearchCommand}"/>
