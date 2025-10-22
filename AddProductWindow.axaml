@@ -34,10 +34,14 @@
         <StackPanel Orientation="Horizontal" Width="360" HorizontalAlignment="Center" Margin="0 0 0 10">
             <StackPanel>
                 <TextBlock Text="안전 최소 수량" Margin="0,0,0,5"/>
-                <NumericUpDown Value="{Binding SafeQuantity}"  Width="360" Margin="0,0,0,10"/>
+                <NumericUpDown Value="{Binding SafeQuantity}"  Width="160" Margin="0,0,40,0"
+                               FormatString="0"
+                               Minimum="0"/>
             </StackPanel>
-            <TextBlock Text="경고 최소 수량:" Margin="0,0,0,5"/>
-            <NumericUpDown Value="{Binding AlertQuantity}"  Width="360" Margin="0,0,0,10"/>
+            <StackPanel>
+                <TextBlock Text="경고 최소 수량:" Margin="0,0,0,5"/>
+                <NumericUpDown Value="{Binding AlertQuantity}"  Width="160" FormatString="0" Minimum="0"/>
+            </StackPanel>
         </StackPanel>
         <StackPanel>
             <TextBlock Text="상품 이미지" />
