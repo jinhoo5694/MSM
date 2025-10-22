@@ -140,6 +140,7 @@ namespace MSM.ViewModels
         public ICommand DeleteProductCommand { get; }
         public ICommand SearchCommand { get; }
 
+        public ICommand CloseCommand { get; }
         public ICommand ExportReportCommand { get; }
         
         public event Func<EditAndReduceStockViewModel, Task<Product?>>? ShowEditAndReduceStockWindow;
@@ -148,6 +149,7 @@ namespace MSM.ViewModels
         public event Action? RequestFocusBarcode;
         public event Func<string, Task>? ShowAlert;
         public event Func<string, Task<bool>>? ShowConfirmation;
+        public event Func<string, Task<bool>>? ShowCloseConfirmation; 
         public MainWindowViewModel(IStockService stockService, Window owner)
         {
             _stockService = stockService;
