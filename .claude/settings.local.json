@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(dotnet build:*)",
+      "Bash(dotnet publish:*)",
+      "Bash(dir:*)",
+      "Bash(echo:*)",
+      "Bash(dir /s /b)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

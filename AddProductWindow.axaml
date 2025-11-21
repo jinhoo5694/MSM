@@ -3,69 +3,172 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:viewModels="clr-namespace:MSM.ViewModels"
-        mc:Ignorable="d" d:DesignWidth="400" d:DesignHeight="700"
+        mc:Ignorable="d" d:DesignWidth="480" d:DesignHeight="680"
         x:Class="MSM.AddProductWindow"
         x:DataType="viewModels:AddProductViewModel"
-        Title="Add Product"
-        Height="700"
-        Width="400">
-     
-    <StackPanel Margin="20" Spacing="10">
-        <TextBlock Text="상품명"/>
-        <TextBox Text="{Binding Name}" Width="360" Margin="0,0,0,10"/>
-        <StackPanel Orientation="Horizontal" Width="360" HorizontalAlignment="Center" Margin="0 0 0 10">
-            <StackPanel>
-                <TextBlock Text="재고 수량" Margin="0 0 0 5"/>
-                <NumericUpDown Value="{Binding Quantity}"
-                               Width="160"
-                               Margin="0 0 40 0"
-                               FormatString="0"
-                               Minimum="0"/>    
-            </StackPanel>
-           <StackPanel>
-               <TextBlock Text="1회 차감 수량" Margin="0 0 0 5"/>
-               <NumericUpDown Value="{Binding DefaultReductionAmount}"
-                              Width="160"
-                              FormatString="0"
-                              Minimum="0"/>   
-           </StackPanel> 
-        </StackPanel>
-      
-        <StackPanel Orientation="Horizontal" Width="360" HorizontalAlignment="Center" Margin="0 0 0 10">
-            <StackPanel>
-                <TextBlock Text="안전 최소 수량" Margin="0,0,0,5"/>
-                <NumericUpDown Value="{Binding SafeQuantity}"  Width="360" Margin="0,0,0,10"/>
-            </StackPanel>
-            <TextBlock Text="경고 최소 수량:" Margin="0,0,0,5"/>
-            <NumericUpDown Value="{Binding AlertQuantity}"  Width="360" Margin="0,0,0,10"/>
-        </StackPanel>
-        <StackPanel>
-            <TextBlock Text="상품 이미지" />
-            <Grid Width="360">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="100"/>
-                    <ColumnDefinition Width="*"/>
-                </Grid.ColumnDefinitions>
+        Title="새 상품 추가"
+        Height="680"
+        Width="480"
+        Background="{DynamicResource SemiGrey1Color}"
+        WindowStartupLocation="CenterOwner">
 
-                <Image Grid.Column="0" 
-                       Source="{Binding ProductImage}" 
-                       Width="100" Height="100" 
-                       Stretch="UniformToFill" 
-                       HorizontalAlignment="Left"/>
-        
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <StackPanel Margin="24" Spacing="20">
+            <!-- Header -->
+            <StackPanel Spacing="6">
+                <TextBlock Text="새 상품 추가"
+                           FontSize="28"
+                           FontWeight="Bold"/>
+                <TextBlock Text="상품 정보를 입력하여 재고에 추가합니다"
+                           FontSize="15"
+                           Foreground="{DynamicResource SemiGrey6Color}"/>
+            </StackPanel>
+
+            <!-- Basic Info Section -->
+            <Border Background="{DynamicResource SemiGrey0Color}"
+                    CornerRadius="8"
+                    Padding="20">
+                <StackPanel Spacing="16">
+                    <TextBlock Text="기본 정보"
+                               FontSize="16"
+                               FontWeight="SemiBold"
+                               Foreground="{DynamicResource SemiGrey8Color}"/>
+
+                    <!-- Product Name -->
+                    <StackPanel Spacing="8">
+                        <TextBlock Text="상품명" FontSize="15"/>
+                        <TextBox Text="{Binding Name}"
+                                 Watermark="예: 콜라 500ml"
+                                 FontSize="14"/>
+                    </StackPanel>
+
+                    <!-- Product Image -->
+                    <StackPanel Spacing="8">
+                        <TextBlock Text="상품 이미지" FontSize="15"/>
+                        <Border Background="{DynamicResource SemiGrey1Color}"
+                                CornerRadius="6"
+                                Padding="16"
+                                BorderBrush="{DynamicResource SemiGrey3Color}"
+                                BorderThickness="1">
+                            <Grid ColumnDefinitions="80,*,Auto">
+                                <Border Grid.Column="0"
+                                        Background="{DynamicResource SemiGrey2Color}"
+                                        CornerRadius="4"
+                                        Width="64"
+                                        Height="64"
+                                        ClipToBounds="True">
+                                    <Image Source="{Binding ProductImage}"
+                                           Stretch="UniformToFill"/>
+                                </Border>
+                                <TextBlock Grid.Column="1"
+                                           Text="{Binding ImagePath, TargetNullValue='이미지를 선택하세요'}"
+                                           VerticalAlignment="Center"
+                                           Margin="12,0"
+                                           FontSize="14"
+                                           Foreground="{DynamicResource SemiGrey6Color}"
+                                           TextTrimming="CharacterEllipsis"/>
+                                <Button Grid.Column="2"
+                                        Content="선택"
+                                        Command="{Binding BrowseImageCommand}"
+                                        VerticalAlignment="Center"
+                                        Padding="16,8"
+                                        FontSize="14"/>
+                            </Grid>
+                        </Border>
+                    </StackPanel>
+                </StackPanel>
+            </Border>
+
+            <!-- Quantity Section -->
+            <Border Background="{DynamicResource SemiGrey0Color}"
+                    CornerRadius="8"
+                    Padding="20">
+                <StackPanel Spacing="16">
+                    <TextBlock Text="수량 설정"
+                               FontSize="16"
+                               FontWeight="SemiBold"
+                               Foreground="{DynamicResource SemiGrey8Color}"/>
+
+                    <Grid ColumnDefinitions="*,16,*">
+                        <StackPanel Grid.Column="0" Spacing="8">
+                            <TextBlock Text="초기 재고" FontSize="15"/>
+                            <NumericUpDown Value="{Binding Quantity}"
+                                           FormatString="0"
+                                           Minimum="0"
+                                           FontSize="14"/>
+                        </StackPanel>
+                        <StackPanel Grid.Column="2" Spacing="8">
+                            <TextBlock Text="1회 차감량" FontSize="15"/>
+                            <NumericUpDown Value="{Binding DefaultReductionAmount}"
+                                           FormatString="0"
+                                           Minimum="1"
+                                           FontSize="14"/>
+                        </StackPanel>
+                    </Grid>
+                </StackPanel>
+            </Border>
+
+            <!-- Alert Settings Section -->
+            <Border Background="{DynamicResource SemiGrey0Color}"
+                    CornerRadius="8"
+                    Padding="20">
+                <StackPanel Spacing="16">
+                    <StackPanel Spacing="6">
+                        <TextBlock Text="재고 알림 설정"
+                                   FontSize="16"
+                                   FontWeight="SemiBold"
+                                   Foreground="{DynamicResource SemiGrey8Color}"/>
+                        <TextBlock Text="재고 수량에 따른 상태 표시 기준을 설정합니다"
+                                   FontSize="14"
+                                   Foreground="{DynamicResource SemiGrey6Color}"/>
+                    </StackPanel>
+
+                    <Grid ColumnDefinitions="*,16,*">
+                        <StackPanel Grid.Column="0" Spacing="8">
+                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                <Border Background="{DynamicResource SemiOrange1Color}"
+                                        CornerRadius="3"
+                                        Width="10"
+                                        Height="10"/>
+                                <TextBlock Text="경고 수량" FontSize="15"/>
+                            </StackPanel>
+                            <NumericUpDown Value="{Binding AlertQuantity}"
+                                           FormatString="0"
+                                           Minimum="0"
+                                           FontSize="14"/>
+                        </StackPanel>
+                        <StackPanel Grid.Column="2" Spacing="8">
+                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                <Border Background="{DynamicResource SemiGreen1Color}"
+                                        CornerRadius="3"
+                                        Width="10"
+                                        Height="10"/>
+                                <TextBlock Text="안전 수량" FontSize="15"/>
+                            </StackPanel>
+                            <NumericUpDown Value="{Binding SafeQuantity}"
+                                           FormatString="0"
+                                           Minimum="0"
+                                           FontSize="14"/>
+                        </StackPanel>
+                    </Grid>
+                </StackPanel>
+            </Border>
+
+            <!-- Action Buttons -->
+            <Grid ColumnDefinitions="*,Auto,Auto" Margin="0,8,0,0">
                 <Button Grid.Column="1"
-                        Content="이미지 탐색" 
-                        Command="{Binding BrowseImageCommand}"
-                        HorizontalAlignment="Right" 
-                        VerticalAlignment="Bottom"
-                />
-            </Grid> 
-            <TextBox Text="{Binding ImagePath, Mode=TwoWay}" IsReadOnly="True" IsVisible="False"/>
+                        Content="취소"
+                        Command="{Binding CancelCommand}"
+                        Padding="24,12"
+                        FontSize="14"
+                        Margin="0,0,12,0"/>
+                <Button Grid.Column="2"
+                        Content="상품 추가"
+                        Command="{Binding SaveCommand}"
+                        Classes="Primary"
+                        Padding="24,12"
+                        FontSize="14"/>
+            </Grid>
         </StackPanel>
-
-        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="10" Margin="0,20,0,0">
-            <Button Content="저장" Command="{Binding SaveCommand}"/>
-            <Button Content="취소" Command="{Binding CancelCommand}"/>
-        </StackPanel>
-    </StackPanel>
+    </ScrollViewer>
 </Window>

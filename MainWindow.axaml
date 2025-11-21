@@ -3,7 +3,7 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:MSM"
-        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+        mc:Ignorable="d" d:DesignWidth="1200" d:DesignHeight="800"
         x:Class="MSM.MainWindow"
         WindowState="FullScreen"
         CanResize="False"
@@ -12,53 +12,159 @@
         xmlns:viewModels="clr-namespace:MSM.ViewModels"
         xmlns:views="clr-namespace:MSM.Views"
         x:DataType="viewModels:MainWindowViewModel"
-        Title="MSM">
-    
-    <DockPanel>
-        
-        <StackPanel DockPanel.Dock="Bottom" 
-                    Orientation="Horizontal" 
-                    Spacing="10" 
-                    Margin="10"
-                    HorizontalAlignment="Right">
-            <Button Content="재고 보고서 저장" Click="OnExportReportClick" /> 
-            <Button Content="저장 후 종료" Click="OnExportAndCloseClick" />
-            <Button Content="강제 종료" Click="OnCloseClick" />
-        </StackPanel>
-        
-        <StackPanel Margin="20">
-            <StackPanel Orientation="Horizontal" Spacing="10" Margin="0,0,0,10">
-                <ToggleButton IsChecked="{Binding IsBarcodeScanningEnabled}" 
-                              Content="바코드 스캔 / 검색 전환"
-                              Checked="ToggleButton_FocusBarcode" 
-                              Unchecked="ToggleButton_FocusBarcode"
-                              Height="32"
-                              VerticalContentAlignment="Center"
-                              HorizontalContentAlignment="Center"/>
-                <TextBox Name="BarcodeTextBox"
-                         Watermark="{Binding SearchWatermark}"
-                         Text="{Binding Barcode, UpdateSourceTrigger=PropertyChanged}"
-                         Focusable="True"
-                         Width="500"
-                         KeyUp="BarcodeTextBox_KeyUp"
-                         IsVisible="{Binding !IsBarcodeScanningEnabled}"/>
-            </StackPanel>
-            
-            <Button Name="SearchButton" Content="검색" Margin="0,10,0,0" IsVisible="False" Command="{Binding SearchCommand}"/>
-            <TextBlock Name="MessageTextBlock" Margin="0,10,0,0" Text="{Binding Message}"/>
+        Title="MSM - 재고 관리 시스템"
+        Background="{DynamicResource SemiGrey1Color}">
 
-            <ItemsControl x:Name="ProductsItemsControl" ItemsSource="{Binding Products}">
-                <ItemsControl.ItemsPanel>
-                    <ItemsPanelTemplate>
-                        <WrapPanel Orientation="Horizontal" />
-                    </ItemsPanelTemplate>
-                </ItemsControl.ItemsPanel>
-                <ItemsControl.ItemTemplate>
-                    <DataTemplate DataType="viewModels:ProductViewModel">
-                        <views:ProductView />
-                    </DataTemplate>
-                </ItemsControl.ItemTemplate>
-            </ItemsControl>
-        </StackPanel>
+    <DockPanel LastChildFill="True">
+        <!-- Top Header Bar -->
+        <Border DockPanel.Dock="Top"
+                Background="{DynamicResource SemiGrey0Color}"
+                Padding="24,16"
+                BoxShadow="0 2 8 0 #10000000">
+            <Grid ColumnDefinitions="Auto,*,Auto">
+                <!-- App Title -->
+                <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="12" VerticalAlignment="Center">
+                    <TextBlock Text="MSM"
+                               FontSize="32"
+                               FontWeight="Bold"
+                               Foreground="{DynamicResource SemiBlue6Color}"/>
+                    <TextBlock Text="재고 관리 시스템"
+                               FontSize="20"
+                               VerticalAlignment="Center"
+                               Foreground="{DynamicResource SemiGrey7Color}"/>
+                </StackPanel>
+
+                <!-- Search Area -->
+                <Border Grid.Column="1"
+                        Background="{DynamicResource SemiGrey1Color}"
+                        CornerRadius="6"
+                        Padding="12,8"
+                        Margin="40,0"
+                        MaxWidth="600"
+                        HorizontalAlignment="Center">
+                    <Grid ColumnDefinitions="Auto,*,Auto">
+                        <TextBlock Grid.Column="0"
+                                   Text="🔍"
+                                   VerticalAlignment="Center"
+                                   Margin="0,0,12,0"
+                                   FontSize="18"/>
+                        <TextBox Grid.Column="1"
+                                 Name="BarcodeTextBox"
+                                 Watermark="{Binding SearchWatermark}"
+                                 Text="{Binding Barcode, UpdateSourceTrigger=PropertyChanged}"
+                                 Focusable="True"
+                                 BorderThickness="0"
+                                 Background="Transparent"
+                                 KeyUp="BarcodeTextBox_KeyUp"
+                                 IsVisible="{Binding !IsBarcodeScanningEnabled}"
+                                 VerticalAlignment="Center"
+                                 FontSize="16"/>
+                        <ToggleButton Grid.Column="2"
+                                      IsChecked="{Binding IsBarcodeScanningEnabled}"
+                                      Content="{Binding IsBarcodeScanningEnabled, Converter={x:Static local:BoolToModeConverter.Instance}}"
+                                      Checked="ToggleButton_FocusBarcode"
+                                      Unchecked="ToggleButton_FocusBarcode"
+                                      Padding="12,6"
+                                      FontSize="14"/>
+                    </Grid>
+                </Border>
+
+                <!-- Quick Actions -->
+                <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="8">
+                    <Button Content="자동저장 경로"
+                            Click="OnSetAutoSaveDirectoryClick"
+                            Padding="16,10"
+                            FontSize="14"
+                            ToolTip.Tip="2AM 자동 저장 경로 설정"/>
+                    <Button Content="보고서 저장"
+                            Click="OnExportReportClick"
+                            Padding="16,10"
+                            FontSize="14"/>
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <!-- Bottom Action Bar -->
+        <Border DockPanel.Dock="Bottom"
+                Background="{DynamicResource SemiGrey0Color}"
+                Padding="24,12"
+                BoxShadow="0 -2 8 0 #10000000">
+            <Grid ColumnDefinitions="*,Auto">
+                <!-- Status Info -->
+                <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="24" VerticalAlignment="Center">
+                    <StackPanel Orientation="Horizontal" Spacing="6">
+                        <Border Background="{DynamicResource SemiGrey2Color}"
+                                CornerRadius="4"
+                                Padding="12,6">
+                            <TextBlock Text="{Binding Products.Count, StringFormat='전체 {0}개'}"
+                                       FontSize="14"
+                                       Foreground="{DynamicResource SemiGrey8Color}"/>
+                        </Border>
+                    </StackPanel>
+                    <TextBlock Text="{Binding Message}"
+                               FontSize="14"
+                               VerticalAlignment="Center"
+                               Foreground="{DynamicResource SemiGrey7Color}"/>
+                </StackPanel>
+
+                <!-- Action Buttons -->
+                <StackPanel Grid.Column="1"
+                            Orientation="Horizontal"
+                            Spacing="12">
+                    <Button Content="저장 후 종료"
+                            Click="OnExportAndCloseClick"
+                            Classes="Primary"
+                            Padding="20,10"
+                            FontSize="14"/>
+                    <Button Content="종료"
+                            Click="OnCloseClick"
+                            Padding="20,10"
+                            FontSize="14"/>
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <!-- Main Content Area -->
+        <DockPanel Margin="24,16" LastChildFill="True">
+            <!-- Section Header -->
+            <Border DockPanel.Dock="Top" Margin="0,0,0,16">
+                <Grid ColumnDefinitions="*,Auto">
+                    <TextBlock Grid.Column="0"
+                               Text="상품 목록"
+                               FontSize="22"
+                               FontWeight="SemiBold"
+                               VerticalAlignment="Center"/>
+                </Grid>
+            </Border>
+
+            <!-- Hidden Search Button -->
+            <Button DockPanel.Dock="Top"
+                    Name="SearchButton"
+                    Content="검색"
+                    IsVisible="False"
+                    Command="{Binding SearchCommand}"/>
+
+            <!-- Products Grid -->
+            <Border Background="{DynamicResource SemiGrey0Color}"
+                    CornerRadius="8"
+                    Padding="8"
+                    BoxShadow="0 2 8 0 #08000000">
+                <ScrollViewer HorizontalScrollBarVisibility="Disabled"
+                              VerticalScrollBarVisibility="Auto">
+                    <ItemsControl x:Name="ProductsItemsControl" ItemsSource="{Binding Products}">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <WrapPanel Orientation="Horizontal" />
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate DataType="viewModels:ProductViewModel">
+                                <views:ProductView />
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </ScrollViewer>
+            </Border>
+        </DockPanel>
     </DockPanel>
 </Window>

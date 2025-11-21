@@ -3,60 +3,158 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:viewModels="clr-namespace:MSM.ViewModels"
-             mc:Ignorable="d" d:DesignWidth="240" d:DesignHeight="120"
+             mc:Ignorable="d" d:DesignWidth="380" d:DesignHeight="180"
              x:Class="MSM.Views.ProductView"
              x:DataType="viewModels:ProductViewModel">
 
-    <!-- 클래스 기반 스타일들 -->
+    <!-- Status-based styles for the card -->
     <UserControl.Styles>
-        <Style Selector="Border.alert">
-            <Setter Property="BorderBrush" Value="Red"/>
+        <!-- Alert state - low stock -->
+        <Style Selector="Border.product-card.alert">
+            <Setter Property="Background">
+                <Setter.Value>
+                    <LinearGradientBrush StartPoint="0%,0%" EndPoint="100%,0%">
+                        <GradientStop Offset="0" Color="#FFFEF2F2"/>
+                        <GradientStop Offset="1" Color="#FFFFFFFF"/>
+                    </LinearGradientBrush>
+                </Setter.Value>
+            </Setter>
         </Style>
-        <Style Selector="Border.warning">
-            <Setter Property="BorderBrush" Value="#CC6600"/>
+        <!-- Warning state -->
+        <Style Selector="Border.product-card.warning">
+            <Setter Property="Background">
+                <Setter.Value>
+                    <LinearGradientBrush StartPoint="0%,0%" EndPoint="100%,0%">
+                        <GradientStop Offset="0" Color="#FFFEF7ED"/>
+                        <GradientStop Offset="1" Color="#FFFFFFFF"/>
+                    </LinearGradientBrush>
+                </Setter.Value>
+            </Setter>
         </Style>
-        <Style Selector="Border.safe">
-            <Setter Property="BorderBrush" Value="LightGray"/>
+        <!-- Safe state -->
+        <Style Selector="Border.product-card.safe">
+            <Setter Property="Background" Value="{DynamicResource SemiGrey0Color}"/>
+        </Style>
+
+        <!-- Status badge styles -->
+        <Style Selector="Border.status-badge.alert">
+            <Setter Property="Background" Value="{DynamicResource SemiRed1Color}"/>
+        </Style>
+        <Style Selector="TextBlock.status-text.alert">
+            <Setter Property="Foreground" Value="{DynamicResource SemiRed6Color}"/>
+        </Style>
+        <Style Selector="Border.status-badge.warning">
+            <Setter Property="Background" Value="{DynamicResource SemiOrange1Color}"/>
+        </Style>
+        <Style Selector="TextBlock.status-text.warning">
+            <Setter Property="Foreground" Value="{DynamicResource SemiOrange6Color}"/>
+        </Style>
+        <Style Selector="Border.status-badge.safe">
+            <Setter Property="Background" Value="{DynamicResource SemiGreen1Color}"/>
+        </Style>
+        <Style Selector="TextBlock.status-text.safe">
+            <Setter Property="Foreground" Value="{DynamicResource SemiGreen6Color}"/>
         </Style>
     </UserControl.Styles>
 
-    <!-- Border에 Classes 바인딩 -->
-    <Border Classes.alert="{Binding IsAlert}"
+    <!-- Product Card -->
+    <Border Classes="product-card"
+            Classes.alert="{Binding IsAlert}"
             Classes.warning="{Binding IsWarning}"
             Classes.safe="{Binding IsSafe}"
-            BorderThickness="2" Margin="5" Padding="5"
-            Height="200"
-            Width="400">
+            CornerRadius="8"
+            Margin="8"
+            Padding="12"
+            BoxShadow="0 1 4 0 #10000000"
+            Width="360"
+            Height="160">
 
-        <StackPanel Spacing="5" Orientation="Horizontal" Height="200" Width="400">
-            <Image Source="{Binding ProductImage}" 
-                   Width="180"
-                   Height="180"
-                   Stretch="UniformToFill"
-                   HorizontalAlignment="Center"
-                   VerticalAlignment="Center"
-                   Margin="10"/>
-            <Grid Width="190" Height="180">
-                <StackPanel VerticalAlignment="Top" Margin="0, 5, 0, 0"> 
-                    <TextBlock Text="{Binding Name}" 
-                               FontWeight="Bold"
-                               TextWrapping="Wrap"  />
-                    <TextBlock Text="{Binding Quantity, StringFormat='남은 재고: {0}'}"/>
+        <Grid ColumnDefinitions="120,*">
+            <!-- Product Image -->
+            <Border Grid.Column="0"
+                    Background="{DynamicResource SemiGrey2Color}"
+                    CornerRadius="6"
+                    ClipToBounds="True"
+                    Width="100"
+                    Height="100">
+                <Image Source="{Binding ProductImage}"
+                       Stretch="UniformToFill"/>
+            </Border>
+
+            <!-- Product Info -->
+            <Grid Grid.Column="1" Margin="12,0,0,0" RowDefinitions="Auto,*,Auto">
+                <!-- Header with Name and Status Badge -->
+                <Grid Grid.Row="0" ColumnDefinitions="*,Auto">
+                    <TextBlock Grid.Column="0"
+                               Text="{Binding Name}"
+                               FontWeight="SemiBold"
+                               FontSize="16"
+                               TextWrapping="Wrap"
+                               MaxLines="2"
+                               TextTrimming="CharacterEllipsis"/>
+
+                    <!-- Status Badge -->
+                    <Border Grid.Column="1"
+                            Classes="status-badge"
+                            Classes.alert="{Binding IsAlert}"
+                            Classes.warning="{Binding IsWarning}"
+                            Classes.safe="{Binding IsSafe}"
+                            CornerRadius="4"
+                            Padding="6,2"
+                            VerticalAlignment="Top"
+                            Margin="4,0,0,0">
+                        <TextBlock Classes="status-text"
+                                   Classes.alert="{Binding IsAlert}"
+                                   Classes.warning="{Binding IsWarning}"
+                                   Classes.safe="{Binding IsSafe}"
+                                   FontSize="10"
+                                   FontWeight="Medium">
+                            <TextBlock.Text>
+                                <MultiBinding StringFormat="{}{0}">
+                                    <Binding Path="IsAlert" />
+                                </MultiBinding>
+                            </TextBlock.Text>
+                        </TextBlock>
+                    </Border>
+                </Grid>
+
+                <!-- Quantity Display -->
+                <StackPanel Grid.Row="1" VerticalAlignment="Center" Spacing="4">
+                    <TextBlock Text="재고 수량"
+                               FontSize="13"
+                               Foreground="{DynamicResource SemiGrey6Color}"/>
+                    <StackPanel Orientation="Horizontal" Spacing="4">
+                        <TextBlock Text="{Binding Quantity}"
+                                   FontWeight="Bold"
+                                   FontSize="28"/>
+                        <TextBlock Text="개"
+                                   FontSize="14"
+                                   VerticalAlignment="Bottom"
+                                   Margin="0,0,0,5"
+                                   Foreground="{DynamicResource SemiGrey6Color}"/>
+                    </StackPanel>
                 </StackPanel>
-        
-                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0 0 10 0">
-                    <Button 
-                        x:Name="EditButton" 
-                        Content="정보 수정" 
-                        Command="{Binding EditCommand}" 
-                        CommandParameter="{Binding .}"/>
-                    <Button 
-                        x:Name="DeleteButton"
-                        Content="삭제" 
-                        Command="{Binding DeleteCommand}"
-                        CommandParameter="{Binding .}"/>
+
+                <!-- Action Buttons -->
+                <StackPanel Grid.Row="2"
+                            Orientation="Horizontal"
+                            HorizontalAlignment="Right"
+                            Spacing="8">
+                    <Button x:Name="EditButton"
+                            Content="수정"
+                            Command="{Binding EditCommand}"
+                            CommandParameter="{Binding .}"
+                            Padding="14,6"
+                            FontSize="14"/>
+                    <Button x:Name="DeleteButton"
+                            Content="삭제"
+                            Command="{Binding DeleteCommand}"
+                            CommandParameter="{Binding .}"
+                            Classes="Danger"
+                            Padding="14,6"
+                            FontSize="14"/>
                 </StackPanel>
             </Grid>
-        </StackPanel>
+        </Grid>
     </Border>
 </UserControl>

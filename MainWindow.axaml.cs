@@ -41,6 +41,9 @@ namespace MSM
             // StockService를 한 번만 생성해서 ViewModel과 공유
             _stockService = new StockService("stock.xlsx");
 
+            // Set default auto-save directory to application directory
+            _autoSaveDirectory = AppDomain.CurrentDomain.BaseDirectory;
+
             if (Design.IsDesignMode)
             {
                 DataContext = new MainWindowViewModel(_stockService, this);
@@ -192,6 +195,56 @@ namespace MSM
             }
         }
 
+        private async void OnSetAutoSaveDirectoryClick(object? sender, RoutedEventArgs e)
+        {
+            var dialog = new OpenFolderDialog
+            {
+                Title = "자동 저장 경로 선택",
+                Directory = _autoSaveDirectory
+            };
+
+            var result = await dialog.ShowAsync(this);
+            if (!string.IsNullOrEmpty(result))
+            {
+                _autoSaveDirectory = result;
+
+                // Show confirmation
+                var confirmDialog = new Window
+                {
+                    Title = "설정 완료",
+                    Width = 400,
+                    Height = 150,
+                    CanResize = false
+                };
+
+                var okButton = new Button { Content = "확인", Width = 80, IsDefault = true };
+                okButton.Click += (_, __) => confirmDialog.Close();
+
+                confirmDialog.Content = new StackPanel
+                {
+                    Margin = new Thickness(15),
+                    Children =
+                    {
+                        new TextBlock
+                        {
+                            Text = $"자동 저장 경로가 설정되었습니다:\n{result}",
+                            TextWrapping = Avalonia.Media.TextWrapping.Wrap
+                        },
+                        new StackPanel
+                        {
+                            Orientation = Avalonia.Layout.Orientation.Horizontal,
+                            HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Right,
+                            Margin = new Thickness(0, 15, 0, 0),
+                            Children = { okButton }
+                        }
+                    }
+                };
+
+                await confirmDialog.ShowDialog(this);
+                _barcodeTextBox?.Focus();
+            }
+        }
+
         private async void OnExportReportClick(object? sender, RoutedEventArgs e)
         {
             await ExportReportManualAsync();
@@ -267,7 +320,6 @@ namespace MSM
             {
                 // 저장이 실제로 수행되었을 때
                 _stockService.ExportStockReport(result);
-                _autoSaveDirectory = Path.GetDirectoryName(result);
 
                 try { this.Activate(); } catch { /* 무시 */ }
 
