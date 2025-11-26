@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "dgSpecHash": "MfxhnLVwrtw=",
+  "dgSpecHash": "HGPg8Q6V4AI=",
   "success": true,
   "projectFilePath": "C:\\Users\\jinho\\DEV\\MSM\\MSM.csproj",
   "expectedPackageFiles": [
@@ -48,10 +48,7 @@
     "C:\\Users\\jinho\\.nuget\\packages\\system.security.cryptography.pkcs\\9.0.3\\system.security.cryptography.pkcs.9.0.3.nupkg.sha512",
     "C:\\Users\\jinho\\.nuget\\packages\\system.security.cryptography.xml\\9.0.3\\system.security.cryptography.xml.9.0.3.nupkg.sha512",
     "C:\\Users\\jinho\\.nuget\\packages\\system.text.encoding.codepages\\9.0.3\\system.text.encoding.codepages.9.0.3.nupkg.sha512",
-    "C:\\Users\\jinho\\.nuget\\packages\\tmds.dbus.protocol\\0.21.2\\tmds.dbus.protocol.0.21.2.nupkg.sha512",
-    "C:\\Users\\jinho\\.nuget\\packages\\microsoft.netcore.app.runtime.win-x64\\9.0.10\\microsoft.netcore.app.runtime.win-x64.9.0.10.nupkg.sha512",
-    "C:\\Users\\jinho\\.nuget\\packages\\microsoft.windowsdesktop.app.runtime.win-x64\\9.0.10\\microsoft.windowsdesktop.app.runtime.win-x64.9.0.10.nupkg.sha512",
-    "C:\\Users\\jinho\\.nuget\\packages\\microsoft.aspnetcore.app.runtime.win-x64\\9.0.10\\microsoft.aspnetcore.app.runtime.win-x64.9.0.10.nupkg.sha512"
+    "C:\\Users\\jinho\\.nuget\\packages\\tmds.dbus.protocol\\0.21.2\\tmds.dbus.protocol.0.21.2.nupkg.sha512"
   ],
   "logs": []
 }

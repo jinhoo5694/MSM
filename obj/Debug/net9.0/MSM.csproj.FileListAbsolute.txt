@@ -263,3 +263,6 @@ C:\Users\jinho\DEV\MSM\obj\Debug\net9.0\refint\MSM.dll
 C:\Users\jinho\DEV\MSM\obj\Debug\net9.0\MSM.pdb
 C:\Users\jinho\DEV\MSM\obj\Debug\net9.0\MSM.genruntimeconfig.cache
 C:\Users\jinho\DEV\MSM\obj\Debug\net9.0\ref\MSM.dll
+C:\Users\jinho\DEV\MSM\bin\Debug\net9.0\Avalonia.Controls.ColorPicker.dll
+C:\Users\jinho\DEV\MSM\bin\Debug\net9.0\Avalonia.Diagnostics.dll
+C:\Users\jinho\DEV\MSM\bin\Debug\net9.0\Avalonia.Themes.Simple.dll
