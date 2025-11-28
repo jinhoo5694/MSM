@@ -9,31 +9,23 @@
 
     <!-- Status-based styles for the card -->
     <UserControl.Styles>
-        <!-- Alert state - low stock -->
+        <!-- Alert state - low stock (red background) -->
         <Style Selector="Border.product-card.alert">
-            <Setter Property="Background">
-                <Setter.Value>
-                    <LinearGradientBrush StartPoint="0%,0%" EndPoint="100%,0%">
-                        <GradientStop Offset="0" Color="#FFFEF2F2"/>
-                        <GradientStop Offset="1" Color="#FFFFFFFF"/>
-                    </LinearGradientBrush>
-                </Setter.Value>
-            </Setter>
+            <Setter Property="Background" Value="#FFFEE2E2"/>
+            <Setter Property="BorderBrush" Value="#FFFCA5A5"/>
+            <Setter Property="BorderThickness" Value="2"/>
         </Style>
-        <!-- Warning state -->
+        <!-- Warning state (orange/yellow background) -->
         <Style Selector="Border.product-card.warning">
-            <Setter Property="Background">
-                <Setter.Value>
-                    <LinearGradientBrush StartPoint="0%,0%" EndPoint="100%,0%">
-                        <GradientStop Offset="0" Color="#FFFEF7ED"/>
-                        <GradientStop Offset="1" Color="#FFFFFFFF"/>
-                    </LinearGradientBrush>
-                </Setter.Value>
-            </Setter>
+            <Setter Property="Background" Value="#FFFEF3C7"/>
+            <Setter Property="BorderBrush" Value="#FFFCD34D"/>
+            <Setter Property="BorderThickness" Value="2"/>
         </Style>
-        <!-- Safe state -->
+        <!-- Safe state (green background) -->
         <Style Selector="Border.product-card.safe">
-            <Setter Property="Background" Value="{DynamicResource SemiGrey0Color}"/>
+            <Setter Property="Background" Value="#FFD1FAE5"/>
+            <Setter Property="BorderBrush" Value="#FF6EE7B7"/>
+            <Setter Property="BorderThickness" Value="2"/>
         </Style>
 
         <!-- Status badge styles -->
@@ -83,15 +75,19 @@
 
             <!-- Product Info -->
             <Grid Grid.Column="1" Margin="12,0,0,0" RowDefinitions="Auto,*,Auto">
-                <!-- Header with Name and Status Badge -->
+                <!-- Header with Name, Barcode and Status Badge -->
                 <Grid Grid.Row="0" ColumnDefinitions="*,Auto">
-                    <TextBlock Grid.Column="0"
-                               Text="{Binding Name}"
-                               FontWeight="SemiBold"
-                               FontSize="16"
-                               TextWrapping="Wrap"
-                               MaxLines="2"
-                               TextTrimming="CharacterEllipsis"/>
+                    <StackPanel Grid.Column="0" Spacing="2">
+                        <TextBlock Text="{Binding Name}"
+                                   FontWeight="SemiBold"
+                                   FontSize="16"
+                                   TextWrapping="NoWrap"
+                                   TextTrimming="CharacterEllipsis"/>
+                        <TextBlock Text="{Binding Barcode}"
+                                   FontSize="12"
+                                   Foreground="{DynamicResource SemiGrey5Color}"
+                                   FontFamily="Consolas, Monaco, monospace"/>
+                    </StackPanel>
 
                     <!-- Status Badge -->
                     <Border Grid.Column="1"

@@ -44,6 +44,31 @@ namespace MSM.ViewModels
 
         public string SearchWatermark => IsBarcodeScanningEnabled ? "바코드 입력" : "상품명으로 검색";
 
+        // Status filter: "all", "safe", "warning", "alert"
+        private string _statusFilter = "all";
+        public string StatusFilter
+        {
+            get => _statusFilter;
+            set
+            {
+                if (SetAndRaiseIfChanged(ref _statusFilter, value))
+                {
+                    OnPropertyChanged(nameof(IsFilterAll));
+                    OnPropertyChanged(nameof(IsFilterSafe));
+                    OnPropertyChanged(nameof(IsFilterWarning));
+                    OnPropertyChanged(nameof(IsFilterAlert));
+                    FilterProducts();
+                }
+            }
+        }
+
+        public bool IsFilterAll => StatusFilter == "all";
+        public bool IsFilterSafe => StatusFilter == "safe";
+        public bool IsFilterWarning => StatusFilter == "warning";
+        public bool IsFilterAlert => StatusFilter == "alert";
+
+        public ICommand SetFilterCommand { get; }
+
         public bool IsDialogOpen
         {
             get => _isDialogOpen;
@@ -111,22 +136,27 @@ namespace MSM.ViewModels
 
         private void FilterProducts()
         {
-            if (string.IsNullOrWhiteSpace(Barcode) || IsBarcodeScanningEnabled)
+            IEnumerable<ProductViewModel> filtered = _allProducts;
+
+            // Apply status filter
+            filtered = StatusFilter switch
             {
-                Products.Clear();
-                foreach (var p in _allProducts)
-                {
-                    Products.Add(p);
-                }
+                "safe" => filtered.Where(p => p.IsSafe),
+                "warning" => filtered.Where(p => p.IsWarning),
+                "alert" => filtered.Where(p => p.IsAlert),
+                _ => filtered // "all"
+            };
+
+            // Apply name search filter (only in search mode)
+            if (!IsBarcodeScanningEnabled && !string.IsNullOrWhiteSpace(Barcode))
+            {
+                filtered = filtered.Where(p => p.Name.Contains(Barcode, StringComparison.OrdinalIgnoreCase));
             }
-            else
+
+            Products.Clear();
+            foreach (var p in filtered)
             {
-                var filtered = _allProducts.Where(p => p.Name.Contains(Barcode, StringComparison.OrdinalIgnoreCase)).ToList();
-                Products.Clear();
-                foreach (var p in filtered)
-                {
-                    Products.Add(p);
-                }
+                Products.Add(p);
             }
         }
 
@@ -159,6 +189,7 @@ namespace MSM.ViewModels
             _allProducts = new List<ProductViewModel>();
             _owner = owner;
 
+            SetFilterCommand = new RelayCommand(param => StatusFilter = param as string ?? "all");
             ExportReportCommand = new AsyncRelayCommand(ExportReportAsync); 
             
             EditProductCommand = new AsyncRelayCommand(async parameter =>

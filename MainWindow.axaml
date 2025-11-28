@@ -22,16 +22,15 @@
                 Padding="24,16"
                 BoxShadow="0 2 8 0 #10000000">
             <Grid ColumnDefinitions="Auto,*,Auto">
-                <!-- App Title -->
+                <!-- App Logo and Title -->
                 <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="12" VerticalAlignment="Center">
-                    <TextBlock Text="MSM"
-                               FontSize="32"
-                               FontWeight="Bold"
-                               Foreground="{DynamicResource SemiBlue6Color}"/>
-                    <TextBlock Text="재고 관리 시스템"
-                               FontSize="20"
+                    <Image Source="/Assets/logo.png"
+                           Height="40"/>
+                    <TextBlock Text="띵니재고관리시스템"
+                               FontSize="22"
+                               FontWeight="SemiBold"
                                VerticalAlignment="Center"
-                               Foreground="{DynamicResource SemiGrey7Color}"/>
+                               Foreground="{DynamicResource SemiGrey8Color}"/>
                 </StackPanel>
 
                 <!-- Search Area -->
@@ -56,7 +55,7 @@
                                  BorderThickness="0"
                                  Background="Transparent"
                                  KeyUp="BarcodeTextBox_KeyUp"
-                                 IsVisible="{Binding !IsBarcodeScanningEnabled}"
+                                 IsVisible="True"
                                  VerticalAlignment="Center"
                                  FontSize="16"/>
                         <ToggleButton Grid.Column="2"
@@ -126,14 +125,49 @@
 
         <!-- Main Content Area -->
         <DockPanel Margin="24,16" LastChildFill="True">
-            <!-- Section Header -->
+            <!-- Section Header with Filter Buttons -->
             <Border DockPanel.Dock="Top" Margin="0,0,0,16">
-                <Grid ColumnDefinitions="*,Auto">
+                <Grid ColumnDefinitions="Auto,*,Auto">
                     <TextBlock Grid.Column="0"
                                Text="상품 목록"
                                FontSize="22"
                                FontWeight="SemiBold"
                                VerticalAlignment="Center"/>
+
+                    <!-- Status Filter Buttons -->
+                    <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="8">
+                        <RadioButton GroupName="StatusFilter"
+                                     Content="전체"
+                                     IsChecked="{Binding IsFilterAll}"
+                                     Command="{Binding SetFilterCommand}"
+                                     CommandParameter="all"
+                                     Padding="12,6"
+                                     FontSize="14"/>
+                        <RadioButton GroupName="StatusFilter"
+                                     Content="안전"
+                                     IsChecked="{Binding IsFilterSafe}"
+                                     Command="{Binding SetFilterCommand}"
+                                     CommandParameter="safe"
+                                     Padding="12,6"
+                                     FontSize="14"
+                                     Foreground="#FF059669"/>
+                        <RadioButton GroupName="StatusFilter"
+                                     Content="경고"
+                                     IsChecked="{Binding IsFilterWarning}"
+                                     Command="{Binding SetFilterCommand}"
+                                     CommandParameter="warning"
+                                     Padding="12,6"
+                                     FontSize="14"
+                                     Foreground="#FFD97706"/>
+                        <RadioButton GroupName="StatusFilter"
+                                     Content="부족"
+                                     IsChecked="{Binding IsFilterAlert}"
+                                     Command="{Binding SetFilterCommand}"
+                                     CommandParameter="alert"
+                                     Padding="12,6"
+                                     FontSize="14"
+                                     Foreground="#FFDC2626"/>
+                    </StackPanel>
                 </Grid>
             </Border>
 

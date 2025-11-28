@@ -21,7 +21,12 @@ namespace MSM
         private ItemsControl? _productsItemsControl;
         private readonly IStockService _stockService;
         private readonly DispatcherTimer _autoSaveTimer;
+        private readonly DispatcherTimer _idleTimer;
+        private ScreensaverWindow? _screensaverWindow;
         private string? _autoSaveDirectory;
+
+        // Idle timeout: 5 minutes (300 seconds) for production
+        private const int IdleTimeoutSeconds = 300;
 
         public MainWindow()
         {
@@ -63,6 +68,20 @@ namespace MSM
             };
             _autoSaveTimer.Tick += AutoSaveTimer_Tick;
             _autoSaveTimer.Start();
+
+            // Idle detection timer for screensaver
+            _idleTimer = new DispatcherTimer
+            {
+                Interval = TimeSpan.FromSeconds(IdleTimeoutSeconds)
+            };
+            _idleTimer.Tick += IdleTimer_Tick;
+            _idleTimer.Start();
+
+            // Reset idle timer on any user interaction
+            PointerMoved += ResetIdleTimer;
+            PointerPressed += ResetIdleTimer;
+            KeyDown += ResetIdleTimer;
+            KeyUp += ResetIdleTimer;
 
             if (DataContext is MainWindowViewModel viewModel)
             {
@@ -381,11 +400,42 @@ namespace MSM
             Dispatcher.UIThread.Post(() =>
             {
                 _barcodeTextBox?.Focus();
-                
+
                 // (선택 사항) 포커스가 들어갈 때 텍스트가 있다면 커서를 끝으로 이동시킵니다.
                 if (_barcodeTextBox != null)
-                    _barcodeTextBox.CaretIndex = _barcodeTextBox.Text?.Length ?? 0; 
+                    _barcodeTextBox.CaretIndex = _barcodeTextBox.Text?.Length ?? 0;
             }, DispatcherPriority.Background);
+        }
+
+        private void ResetIdleTimer(object? sender, EventArgs e)
+        {
+            _idleTimer.Stop();
+            _idleTimer.Start();
+        }
+
+        private void IdleTimer_Tick(object? sender, EventArgs e)
+        {
+            _idleTimer.Stop();
+            ShowScreensaver();
+        }
+
+        private void ShowScreensaver()
+        {
+            if (_screensaverWindow != null) return;
+
+            _screensaverWindow = new ScreensaverWindow();
+            _screensaverWindow.Closed += (_, _) =>
+            {
+                _screensaverWindow = null;
+                _idleTimer.Start();
+
+                // Refocus barcode textbox after screensaver closes
+                Dispatcher.UIThread.Post(() =>
+                {
+                    _barcodeTextBox?.Focus();
+                }, DispatcherPriority.Background);
+            };
+            _screensaverWindow.Show();
         }
 
     }

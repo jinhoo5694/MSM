@@ -21,6 +21,20 @@
                 <TextBlock Text="상품 정보를 수정하거나 재고를 차감합니다"
                            FontSize="15"
                            Foreground="{DynamicResource SemiGrey6Color}"/>
+                <StackPanel Orientation="Horizontal" Spacing="8" Margin="0,4,0,0">
+                    <TextBlock Text="바코드:"
+                               FontSize="14"
+                               Foreground="{DynamicResource SemiGrey6Color}"
+                               VerticalAlignment="Center"/>
+                    <Border Background="{DynamicResource SemiGrey2Color}"
+                            CornerRadius="4"
+                            Padding="8,4">
+                        <TextBlock Text="{Binding Barcode}"
+                                   FontSize="14"
+                                   FontWeight="Medium"
+                                   FontFamily="Consolas, Monaco, monospace"/>
+                    </Border>
+                </StackPanel>
             </StackPanel>
 
             <!-- Quick Reduce Section (Highlighted) -->

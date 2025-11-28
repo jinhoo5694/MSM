@@ -29,6 +29,12 @@
     <AvaloniaResource Include="Assets\*.png" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Content Include="Assets\screensaver\*.*">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
   
 
   <ItemGroup>
