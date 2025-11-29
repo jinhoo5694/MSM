@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Avalonia;
@@ -8,28 +7,18 @@ using Avalonia.Input;
 using Avalonia.Media;
 using Avalonia.Media.Imaging;
 using Avalonia.Threading;
+using SkiaSharp;
 
 namespace MSM
 {
     public partial class ScreensaverWindow : Window
     {
-        private readonly List<FloatingPhoto> _photos = new();
-        private readonly DispatcherTimer _animationTimer;
-        private readonly Random _random = new();
+        private readonly DispatcherTimer _slideshowTimer;
         private readonly string[] _imagePaths;
+        private int _currentImageIndex;
+        private Bitmap? _currentBitmap;
         private bool _isClosing;
-
-        private class FloatingPhoto
-        {
-            public Image ImageControl { get; set; } = null!;
-            public double X { get; set; }
-            public double Y { get; set; }
-            public double VelocityX { get; set; }
-            public double VelocityY { get; set; }
-            public double Rotation { get; set; }
-            public double RotationSpeed { get; set; }
-            public double Scale { get; set; }
-        }
+        private Point? _lastPointerPosition;
 
         public ScreensaverWindow()
         {
@@ -49,12 +38,16 @@ namespace MSM
                 _imagePaths = Array.Empty<string>();
             }
 
-            // Setup animation timer
-            _animationTimer = new DispatcherTimer
+            // Shuffle images
+            var random = new Random();
+            _imagePaths = _imagePaths.OrderBy(_ => random.Next()).ToArray();
+
+            // Setup slideshow timer - 10 seconds per image
+            _slideshowTimer = new DispatcherTimer
             {
-                Interval = TimeSpan.FromMilliseconds(16) // ~60 FPS
+                Interval = TimeSpan.FromSeconds(10)
             };
-            _animationTimer.Tick += OnAnimationTick;
+            _slideshowTimer.Tick += OnSlideshowTick;
 
             // Close on any input
             PointerPressed += OnInteraction;
@@ -64,8 +57,6 @@ namespace MSM
             Opened += OnWindowOpened;
             Closed += OnWindowClosed;
         }
-
-        private Point? _lastPointerPosition;
 
         private void OnPointerMoved(object? sender, PointerEventArgs e)
         {
@@ -97,156 +88,112 @@ namespace MSM
             if (!_isClosing)
             {
                 _isClosing = true;
-                _animationTimer.Stop();
+                _slideshowTimer.Stop();
                 Close();
             }
         }
 
         private void OnWindowOpened(object? sender, EventArgs e)
         {
-            InitializePhotos();
-            _animationTimer.Start();
+            ShowCurrentImage();
+            _slideshowTimer.Start();
         }
 
         private void OnWindowClosed(object? sender, EventArgs e)
         {
-            _animationTimer.Stop();
-
-            // Dispose bitmaps
-            foreach (var photo in _photos)
-            {
-                if (photo.ImageControl.Source is Bitmap bitmap)
-                {
-                    bitmap.Dispose();
-                }
-            }
-            _photos.Clear();
+            _slideshowTimer.Stop();
+            _currentBitmap?.Dispose();
+            _currentBitmap = null;
         }
 
-        private void InitializePhotos()
+        private void ShowCurrentImage()
         {
             if (_imagePaths.Length == 0) return;
 
-            var canvas = this.FindControl<Canvas>("PhotoCanvas");
-            if (canvas == null) return;
+            var imageControl = this.FindControl<Image>("ScreensaverImage");
+            if (imageControl == null) return;
 
-            // Create 8-12 floating photos
-            var photoCount = Math.Min(_imagePaths.Length, _random.Next(8, 13));
-            var selectedImages = _imagePaths.OrderBy(_ => _random.Next()).Take(photoCount).ToList();
-
-            foreach (var imagePath in selectedImages)
+            try
             {
-                try
-                {
-                    var bitmap = new Bitmap(imagePath);
-                    var image = new Image
-                    {
-                        Source = bitmap,
-                        Width = 200 + _random.Next(100), // Random size between 200-300
-                        Stretch = Stretch.Uniform
-                    };
+                // Dispose previous bitmap
+                _currentBitmap?.Dispose();
 
-                    // Add subtle border/shadow effect via a container
-                    var border = new Border
-                    {
-                        Child = image,
-                        BorderBrush = Brushes.White,
-                        BorderThickness = new Thickness(4),
-                        CornerRadius = new CornerRadius(8),
-                        BoxShadow = new BoxShadows(new BoxShadow
-                        {
-                            Blur = 20,
-                            Color = Color.FromArgb(100, 0, 0, 0),
-                            OffsetX = 0,
-                            OffsetY = 5
-                        }),
-                        ClipToBounds = true,
-                        Background = Brushes.White
-                    };
-
-                    var photo = new FloatingPhoto
-                    {
-                        ImageControl = new Image { Width = 1, Height = 1 }, // Placeholder, we use border
-                        X = _random.NextDouble() * (Bounds.Width > 0 ? Bounds.Width - 300 : 800),
-                        Y = _random.NextDouble() * (Bounds.Height > 0 ? Bounds.Height - 300 : 600),
-                        VelocityX = (_random.NextDouble() - 0.5) * 2, // -1 to 1
-                        VelocityY = (_random.NextDouble() - 0.5) * 2,
-                        Rotation = _random.NextDouble() * 30 - 15, // -15 to 15 degrees
-                        RotationSpeed = (_random.NextDouble() - 0.5) * 0.5,
-                        Scale = 0.8 + _random.NextDouble() * 0.4 // 0.8 to 1.2
-                    };
-
-                    // Store border reference in a custom way
-                    border.Tag = photo;
-                    photo.ImageControl = image;
-
-                    Canvas.SetLeft(border, photo.X);
-                    Canvas.SetTop(border, photo.Y);
-
-                    var transformGroup = new TransformGroup();
-                    transformGroup.Children.Add(new RotateTransform(photo.Rotation));
-                    transformGroup.Children.Add(new ScaleTransform(photo.Scale, photo.Scale));
-                    border.RenderTransform = transformGroup;
-                    border.RenderTransformOrigin = new RelativePoint(0.5, 0.5, RelativeUnit.Relative);
-
-                    canvas.Children.Add(border);
-                    _photos.Add(photo);
-                }
-                catch
-                {
-                    // Skip invalid images
-                }
+                // Load image with EXIF orientation correction
+                _currentBitmap = LoadImageWithExifOrientation(_imagePaths[_currentImageIndex]);
+                imageControl.Source = _currentBitmap;
+            }
+            catch
+            {
+                // Skip invalid images, try next
+                _currentImageIndex = (_currentImageIndex + 1) % _imagePaths.Length;
             }
         }
 
-        private void OnAnimationTick(object? sender, EventArgs e)
+        private Bitmap? LoadImageWithExifOrientation(string path)
         {
-            var canvas = this.FindControl<Canvas>("PhotoCanvas");
-            if (canvas == null) return;
+            using var stream = File.OpenRead(path);
+            using var codec = SKCodec.Create(stream);
+            if (codec == null) return new Bitmap(path);
 
-            var width = Bounds.Width;
-            var height = Bounds.Height;
+            var origin = codec.EncodedOrigin;
+            using var original = SKBitmap.Decode(codec);
+            if (original == null) return new Bitmap(path);
 
-            foreach (var child in canvas.Children)
+            SKBitmap rotated;
+            switch (origin)
             {
-                if (child is Border border && border.Tag is FloatingPhoto photo)
-                {
-                    // Update position
-                    photo.X += photo.VelocityX;
-                    photo.Y += photo.VelocityY;
-
-                    // Bounce off edges
-                    var photoWidth = border.Bounds.Width * photo.Scale;
-                    var photoHeight = border.Bounds.Height * photo.Scale;
-
-                    if (photo.X <= 0 || photo.X + photoWidth >= width)
+                case SKEncodedOrigin.RightTop: // 90 degrees clockwise
+                    rotated = new SKBitmap(original.Height, original.Width);
+                    using (var canvas = new SKCanvas(rotated))
                     {
-                        photo.VelocityX *= -1;
-                        photo.X = Math.Max(0, Math.Min(photo.X, width - photoWidth));
+                        canvas.Translate(rotated.Width, 0);
+                        canvas.RotateDegrees(90);
+                        canvas.DrawBitmap(original, 0, 0);
                     }
+                    break;
 
-                    if (photo.Y <= 0 || photo.Y + photoHeight >= height)
+                case SKEncodedOrigin.BottomRight: // 180 degrees
+                    rotated = new SKBitmap(original.Width, original.Height);
+                    using (var canvas = new SKCanvas(rotated))
                     {
-                        photo.VelocityY *= -1;
-                        photo.Y = Math.Max(0, Math.Min(photo.Y, height - photoHeight));
+                        canvas.Translate(rotated.Width, rotated.Height);
+                        canvas.RotateDegrees(180);
+                        canvas.DrawBitmap(original, 0, 0);
                     }
+                    break;
 
-                    // Update rotation
-                    photo.Rotation += photo.RotationSpeed;
-
-                    // Apply transforms
-                    Canvas.SetLeft(border, photo.X);
-                    Canvas.SetTop(border, photo.Y);
-
-                    if (border.RenderTransform is TransformGroup tg && tg.Children.Count >= 1)
+                case SKEncodedOrigin.LeftBottom: // 90 degrees counter-clockwise
+                    rotated = new SKBitmap(original.Height, original.Width);
+                    using (var canvas = new SKCanvas(rotated))
                     {
-                        if (tg.Children[0] is RotateTransform rt)
-                        {
-                            rt.Angle = photo.Rotation;
-                        }
+                        canvas.Translate(0, rotated.Height);
+                        canvas.RotateDegrees(-90);
+                        canvas.DrawBitmap(original, 0, 0);
                     }
-                }
+                    break;
+
+                default:
+                    // No rotation needed
+                    rotated = original.Copy();
+                    break;
             }
+
+            // Convert SKBitmap to Avalonia Bitmap
+            using var image = SKImage.FromBitmap(rotated);
+            using var data = image.Encode(SKEncodedImageFormat.Png, 100);
+            using var memStream = new MemoryStream();
+            data.SaveTo(memStream);
+            memStream.Seek(0, SeekOrigin.Begin);
+
+            rotated.Dispose();
+            return new Bitmap(memStream);
+        }
+
+        private void OnSlideshowTick(object? sender, EventArgs e)
+        {
+            // Move to next image
+            _currentImageIndex = (_currentImageIndex + 1) % _imagePaths.Length;
+            ShowCurrentImage();
         }
     }
 }

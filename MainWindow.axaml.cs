@@ -25,8 +25,8 @@ namespace MSM
         private ScreensaverWindow? _screensaverWindow;
         private string? _autoSaveDirectory;
 
-        // Idle timeout: 5 minutes (300 seconds) for production
-        private const int IdleTimeoutSeconds = 300;
+        // Idle timeout: 10 seconds for testing (change to 300 for production)
+        private const int IdleTimeoutSeconds = 10;
 
         public MainWindow()
         {

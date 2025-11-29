@@ -2983,7 +2983,8 @@
       "Avalonia.Fonts.Inter >= 11.3.5",
       "EPPlus >= 8.1.1",
       "Semi.Avalonia >= 11.2.1.2",
-      "Semi.Avalonia.DataGrid >= 11.2.1.2"
+      "Semi.Avalonia.DataGrid >= 11.2.1.2",
+      "SkiaSharp >= 2.88.9"
     ]
   },
   "packageFolders": {
@@ -3062,6 +3063,10 @@
           "Semi.Avalonia.DataGrid": {
             "target": "Package",
             "version": "[11.2.1.2, )"
+          },
+          "SkiaSharp": {
+            "target": "Package",
+            "version": "[2.88.9, )"
           }
         },
         "imports": [

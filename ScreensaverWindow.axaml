@@ -9,10 +9,13 @@
         CanResize="False"
         ExtendClientAreaToDecorationsHint="True"
         ExtendClientAreaChromeHints="NoChrome"
-        Background="#FF1a1a2e"
+        Background="#FF000000"
         Topmost="True">
 
-    <Canvas x:Name="PhotoCanvas" ClipToBounds="True">
-        <!-- Photos will be added dynamically -->
-    </Canvas>
+    <Grid>
+        <Image x:Name="ScreensaverImage"
+               Stretch="Uniform"
+               HorizontalAlignment="Center"
+               VerticalAlignment="Center"/>
+    </Grid>
 </Window>
