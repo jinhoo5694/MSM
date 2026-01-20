@@ -21,6 +21,7 @@ namespace MSM
         private ItemsControl? _productsItemsControl;
         private TextBlock? _primaryPathStatus;
         private TextBlock? _secondaryPathStatus;
+        private TextBlock? _versionText;
         private readonly IStockService _stockService;
         private readonly DispatcherTimer _autoSaveTimer;
         private readonly DispatcherTimer _idleTimer;
@@ -40,6 +41,14 @@ namespace MSM
             _productsItemsControl = this.FindControl<ItemsControl>("ProductsItemsControl");
             _primaryPathStatus = this.FindControl<TextBlock>("PrimaryPathStatus");
             _secondaryPathStatus = this.FindControl<TextBlock>("SecondaryPathStatus");
+            _versionText = this.FindControl<TextBlock>("VersionText");
+
+            // Set version text
+            if (_versionText != null)
+            {
+                _versionText.Text = $"v{UpdateService.GetCurrentVersion()}";
+            }
+
             var startPicker = this.FindControl<DatePicker>("StartDatePicker");
             var endPicker = this.FindControl<DatePicker>("EndDatePicker");
 
@@ -480,6 +489,279 @@ namespace MSM
                 await confirmDialog.ShowDialog(this);
             }
 
+            _barcodeTextBox?.Focus();
+        }
+
+        private async void OnShowChangeHistoryClick(object? sender, RoutedEventArgs e)
+        {
+            var historyWindow = new ChangeHistoryWindow(_stockService);
+            await historyWindow.ShowDialog(this);
+            _barcodeTextBox?.Focus();
+        }
+
+        private async void OnCheckUpdateClick(object? sender, RoutedEventArgs e)
+        {
+            // Show checking dialog
+            var checkingDialog = new Window
+            {
+                Title = "업데이트 확인",
+                Width = 400,
+                Height = 150,
+                CanResize = false,
+                WindowStartupLocation = WindowStartupLocation.CenterOwner
+            };
+
+            checkingDialog.Content = new StackPanel
+            {
+                Margin = new Thickness(20),
+                VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center,
+                Children =
+                {
+                    new TextBlock
+                    {
+                        Text = "업데이트를 확인하는 중...",
+                        HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center,
+                        FontSize = 16
+                    },
+                    new ProgressBar
+                    {
+                        IsIndeterminate = true,
+                        Margin = new Thickness(0, 20, 0, 0),
+                        Height = 20
+                    }
+                }
+            };
+
+            // Check for updates in background
+            var checkTask = UpdateService.CheckForUpdateAsync();
+
+            // Show dialog briefly then check result
+            _ = Task.Run(async () =>
+            {
+                var updateInfo = await checkTask;
+                await Dispatcher.UIThread.InvokeAsync(() =>
+                {
+                    checkingDialog.Close();
+                    ShowUpdateResultDialog(updateInfo);
+                });
+            });
+
+            await checkingDialog.ShowDialog(this);
+        }
+
+        private async void ShowUpdateResultDialog(UpdateInfo? updateInfo)
+        {
+            if (updateInfo == null)
+            {
+                await ShowSimpleDialog("오류", "업데이트 정보를 가져올 수 없습니다.");
+                return;
+            }
+
+            if (!string.IsNullOrEmpty(updateInfo.Error))
+            {
+                await ShowSimpleDialog("오류", $"업데이트 확인 중 오류가 발생했습니다:\n{updateInfo.Error}");
+                return;
+            }
+
+            if (!updateInfo.IsUpdateAvailable)
+            {
+                await ShowSimpleDialog("최신 버전", $"현재 최신 버전입니다. (v{updateInfo.CurrentVersion})");
+                return;
+            }
+
+            // Update available - show update dialog
+            var updateDialog = new Window
+            {
+                Title = "새 버전 발견",
+                Width = 450,
+                Height = 250,
+                CanResize = false,
+                WindowStartupLocation = WindowStartupLocation.CenterOwner
+            };
+
+            var downloadButton = new Button
+            {
+                Content = "다운로드 및 설치",
+                Classes = { "Primary" },
+                Width = 150,
+                HorizontalContentAlignment = Avalonia.Layout.HorizontalAlignment.Center
+            };
+            var cancelButton = new Button
+            {
+                Content = "나중에",
+                Width = 100,
+                HorizontalContentAlignment = Avalonia.Layout.HorizontalAlignment.Center
+            };
+
+            bool shouldUpdate = false;
+            downloadButton.Click += (_, _) => { shouldUpdate = true; updateDialog.Close(); };
+            cancelButton.Click += (_, _) => { shouldUpdate = false; updateDialog.Close(); };
+
+            updateDialog.Content = new StackPanel
+            {
+                Margin = new Thickness(20),
+                Spacing = 12,
+                Children =
+                {
+                    new TextBlock
+                    {
+                        Text = "새 버전이 있습니다!",
+                        FontSize = 18,
+                        FontWeight = Avalonia.Media.FontWeight.Bold
+                    },
+                    new StackPanel
+                    {
+                        Orientation = Avalonia.Layout.Orientation.Horizontal,
+                        Spacing = 8,
+                        Children =
+                        {
+                            new TextBlock { Text = $"현재 버전: v{updateInfo.CurrentVersion}", FontSize = 14 },
+                            new TextBlock { Text = "→", FontSize = 14 },
+                            new TextBlock { Text = $"새 버전: v{updateInfo.LatestVersion}", FontSize = 14, FontWeight = Avalonia.Media.FontWeight.Bold, Foreground = Avalonia.Media.Brushes.Green }
+                        }
+                    },
+                    new TextBlock
+                    {
+                        Text = string.IsNullOrEmpty(updateInfo.ReleaseNotes) ? "" : updateInfo.ReleaseNotes,
+                        FontSize = 12,
+                        TextWrapping = Avalonia.Media.TextWrapping.Wrap,
+                        MaxHeight = 60
+                    },
+                    new Border { Height = 10 },
+                    new TextBlock
+                    {
+                        Text = "업데이트 후 프로그램이 자동으로 재시작됩니다.\n(재고 데이터는 유지됩니다)",
+                        FontSize = 12,
+                        Foreground = Avalonia.Media.Brushes.Gray
+                    },
+                    new StackPanel
+                    {
+                        Orientation = Avalonia.Layout.Orientation.Horizontal,
+                        HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Right,
+                        Spacing = 10,
+                        Margin = new Thickness(0, 10, 0, 0),
+                        Children = { downloadButton, cancelButton }
+                    }
+                }
+            };
+
+            await updateDialog.ShowDialog(this);
+
+            if (shouldUpdate && !string.IsNullOrEmpty(updateInfo.DownloadUrl))
+            {
+                await DownloadAndInstallUpdate(updateInfo.DownloadUrl);
+            }
+
+            _barcodeTextBox?.Focus();
+        }
+
+        private async Task DownloadAndInstallUpdate(string downloadUrl)
+        {
+            var progressDialog = new Window
+            {
+                Title = "업데이트 다운로드",
+                Width = 400,
+                Height = 150,
+                CanResize = false,
+                WindowStartupLocation = WindowStartupLocation.CenterOwner
+            };
+
+            var progressBar = new ProgressBar
+            {
+                Minimum = 0,
+                Maximum = 100,
+                Value = 0,
+                Height = 20
+            };
+            var progressText = new TextBlock
+            {
+                Text = "다운로드 중... 0%",
+                HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center
+            };
+
+            progressDialog.Content = new StackPanel
+            {
+                Margin = new Thickness(20),
+                VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center,
+                Spacing = 12,
+                Children =
+                {
+                    new TextBlock
+                    {
+                        Text = "업데이트를 다운로드하는 중...",
+                        HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center,
+                        FontSize = 16
+                    },
+                    progressBar,
+                    progressText
+                }
+            };
+
+            var downloadTask = Task.Run(async () =>
+            {
+                var result = await UpdateService.DownloadAndInstallAsync(downloadUrl, progress =>
+                {
+                    Dispatcher.UIThread.Post(() =>
+                    {
+                        progressBar.Value = progress;
+                        progressText.Text = $"다운로드 중... {progress}%";
+                    });
+                });
+
+                await Dispatcher.UIThread.InvokeAsync(() =>
+                {
+                    progressDialog.Close();
+
+                    if (result)
+                    {
+                        // Exit the application - the updater script will restart it
+                        Environment.Exit(0);
+                    }
+                    else
+                    {
+                        _ = ShowSimpleDialog("오류", "업데이트 설치 중 오류가 발생했습니다.");
+                    }
+                });
+            });
+
+            await progressDialog.ShowDialog(this);
+        }
+
+        private async Task ShowSimpleDialog(string title, string message)
+        {
+            var dialog = new Window
+            {
+                Title = title,
+                Width = 400,
+                Height = 150,
+                CanResize = false,
+                WindowStartupLocation = WindowStartupLocation.CenterOwner
+            };
+
+            var okButton = new Button { Content = "확인", Width = 80, IsDefault = true };
+            okButton.Click += (_, _) => dialog.Close();
+
+            dialog.Content = new StackPanel
+            {
+                Margin = new Thickness(20),
+                Children =
+                {
+                    new TextBlock
+                    {
+                        Text = message,
+                        TextWrapping = Avalonia.Media.TextWrapping.Wrap
+                    },
+                    new StackPanel
+                    {
+                        Orientation = Avalonia.Layout.Orientation.Horizontal,
+                        HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Right,
+                        Margin = new Thickness(0, 15, 0, 0),
+                        Children = { okButton }
+                    }
+                }
+            };
+
+            await dialog.ShowDialog(this);
             _barcodeTextBox?.Focus();
         }
 

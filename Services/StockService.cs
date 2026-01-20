@@ -284,7 +284,42 @@ namespace MSM.Services
             _changeLogs.Add(log);
             var json = System.Text.Json.JsonSerializer.Serialize(log);
             File.AppendAllText(_logFilePath, json + Environment.NewLine);
+        }
 
+        // 날짜 범위로 로그 조회
+        public IEnumerable<StockChangeLogEntry> GetLogsByDateRange(DateTime startDate, DateTime endDate)
+        {
+            var results = new List<StockChangeLogEntry>();
+
+            if (!File.Exists(_logFilePath))
+                return results;
+
+            var lines = File.ReadAllLines(_logFilePath);
+            foreach (var line in lines)
+            {
+                try
+                {
+                    var log = System.Text.Json.JsonSerializer.Deserialize<StockChangeLog>(line);
+                    if (log != null && log.Time.Date >= startDate.Date && log.Time.Date <= endDate.Date)
+                    {
+                        results.Add(new StockChangeLogEntry
+                        {
+                            Time = log.Time,
+                            Barcode = log.Barcode,
+                            Name = log.Name,
+                            OldQty = log.OldQty,
+                            NewQty = log.NewQty,
+                            Reason = log.Reason
+                        });
+                    }
+                }
+                catch
+                {
+                    // 잘못된 라인은 무시
+                }
+            }
+
+            return results.OrderByDescending(x => x.Time);
         }
 
         // 보고서 내보내기
@@ -320,7 +355,8 @@ namespace MSM.Services
             ws2.Cells[1, 3].Value = "상품명";
             ws2.Cells[1, 4].Value = "변경 전 수량";
             ws2.Cells[1, 5].Value = "변경 후 수량";
-            ws2.Cells[1, 6].Value = "비고";
+            ws2.Cells[1, 6].Value = "차감된 수량";
+            ws2.Cells[1, 7].Value = "비고";
 
             if (File.Exists(_logFilePath))
             {
@@ -338,7 +374,8 @@ namespace MSM.Services
                             ws2.Cells[r2, 3].Value = log.Name;
                             ws2.Cells[r2, 4].Value = log.OldQty;
                             ws2.Cells[r2, 5].Value = log.NewQty;
-                            ws2.Cells[r2, 6].Value = log.Reason;
+                            ws2.Cells[r2, 6].Value = log.OldQty - log.NewQty; // 차감된 수량
+                            ws2.Cells[r2, 7].Value = log.Reason;
                             r2++;
                         }
                     }

@@ -31,6 +31,12 @@
                                FontWeight="SemiBold"
                                VerticalAlignment="Center"
                                Foreground="{DynamicResource SemiGrey8Color}"/>
+                    <TextBlock Name="VersionText"
+                               Text="v1.0.0"
+                               FontSize="12"
+                               VerticalAlignment="Center"
+                               Margin="8,0,0,0"
+                               Foreground="{DynamicResource SemiGrey5Color}"/>
                 </StackPanel>
 
                 <!-- Search Area -->
@@ -70,6 +76,11 @@
 
                 <!-- Quick Actions -->
                 <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="8">
+                    <Button Content="변경 내역"
+                            Click="OnShowChangeHistoryClick"
+                            Padding="16,10"
+                            FontSize="14"
+                            ToolTip.Tip="재고 변경 내역 조회"/>
                     <Button Content="자동저장 경로"
                             Click="OnSetAutoSaveDirectoryClick"
                             Padding="16,10"
@@ -79,6 +90,12 @@
                             Click="OnExportReportClick"
                             Padding="16,10"
                             FontSize="14"/>
+                    <Button Name="UpdateButton"
+                            Content="업데이트 확인"
+                            Click="OnCheckUpdateClick"
+                            Padding="16,10"
+                            FontSize="14"
+                            ToolTip.Tip="새 버전 확인"/>
                 </StackPanel>
             </Grid>
         </Border>
