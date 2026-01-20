@@ -11,8 +11,8 @@ namespace MSM
     public partial class ChangeHistoryWindow : Window
     {
         private readonly IStockService _stockService;
-        private readonly DatePicker _startDatePicker;
-        private readonly DatePicker _endDatePicker;
+        private readonly CalendarDatePicker _startDatePicker;
+        private readonly CalendarDatePicker _endDatePicker;
         private readonly DataGrid _historyDataGrid;
         private readonly TextBlock _totalCountText;
         private readonly TextBlock _totalChangedText;
@@ -27,8 +27,8 @@ namespace MSM
             InitializeComponent();
             _stockService = new StockService("stock.xlsx");
 
-            _startDatePicker = this.FindControl<DatePicker>("StartDatePicker")!;
-            _endDatePicker = this.FindControl<DatePicker>("EndDatePicker")!;
+            _startDatePicker = this.FindControl<CalendarDatePicker>("StartDatePicker")!;
+            _endDatePicker = this.FindControl<CalendarDatePicker>("EndDatePicker")!;
             _historyDataGrid = this.FindControl<DataGrid>("HistoryDataGrid")!;
             _totalCountText = this.FindControl<TextBlock>("TotalCountText")!;
             _totalChangedText = this.FindControl<TextBlock>("TotalChangedText")!;
@@ -80,8 +80,8 @@ namespace MSM
 
         private void LoadData()
         {
-            var startDate = _startDatePicker.SelectedDate?.DateTime ?? DateTime.Today;
-            var endDate = _endDatePicker.SelectedDate?.DateTime ?? DateTime.Today;
+            var startDate = _startDatePicker.SelectedDate ?? DateTime.Today;
+            var endDate = _endDatePicker.SelectedDate ?? DateTime.Today;
 
             LogEntries.Clear();
 
