@@ -5,6 +5,9 @@ on:
     branches:
       - main
 
+permissions:
+  contents: write
+
 jobs:
   build:
     runs-on: windows-latest
@@ -46,6 +49,5 @@ jobs:
           name: MSM v${{ steps.version.outputs.VERSION }}
           files: ./MSM-v${{ steps.version.outputs.VERSION }}-win-x64.zip
           generate_release_notes: true
-          make_latest: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
