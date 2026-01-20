@@ -126,51 +126,69 @@ namespace MSM.Services
                     }
                 }
 
-                // Create the updater batch script
+                // Create the updater batch script with absolute paths
+                var appDirEscaped = appDir.TrimEnd('\\');
                 var batchScript = $@"@echo off
 chcp 65001 >nul
-echo 업데이트 중입니다. 잠시만 기다려 주세요...
-timeout /t 2 /nobreak > nul
+title MSM Updater
+
+cd /d ""{appDirEscaped}""
+
+echo ============================================
+echo   MSM 업데이트 중입니다
+echo ============================================
+echo.
+echo 잠시만 기다려 주세요...
+timeout /t 3 /nobreak > nul
 
 :: Wait for app to close
+echo [1/5] 프로그램 종료 대기 중...
 taskkill /f /im MSM.exe 2>nul
 timeout /t 2 /nobreak > nul
 
 :: Backup data files
-echo 데이터 파일 백업 중...
-if exist ""stock.xlsx"" copy /y ""stock.xlsx"" ""stock.xlsx.bak"" >nul
-if exist ""stock_logs.json"" copy /y ""stock_logs.json"" ""stock_logs.json.bak"" >nul
-if exist ""autosave_settings.json"" copy /y ""autosave_settings.json"" ""autosave_settings.json.bak"" >nul
+echo [2/5] 데이터 파일 백업 중...
+if exist ""{appDirEscaped}\stock.xlsx"" copy /y ""{appDirEscaped}\stock.xlsx"" ""{appDirEscaped}\stock.xlsx.bak"" >nul
+if exist ""{appDirEscaped}\stock_logs.json"" copy /y ""{appDirEscaped}\stock_logs.json"" ""{appDirEscaped}\stock_logs.json.bak"" >nul
+if exist ""{appDirEscaped}\autosave_settings.json"" copy /y ""{appDirEscaped}\autosave_settings.json"" ""{appDirEscaped}\autosave_settings.json.bak"" >nul
 
 :: Extract new version
-echo 새 버전 설치 중...
-powershell -command ""Expand-Archive -Path 'update.zip' -DestinationPath '.' -Force""
+echo [3/5] 새 버전 설치 중...
+powershell -NoProfile -ExecutionPolicy Bypass -Command ""Expand-Archive -Path '{appDirEscaped}\update.zip' -DestinationPath '{appDirEscaped}' -Force""
+if errorlevel 1 (
+    echo 오류: 압축 해제 실패
+    pause
+    exit /b 1
+)
 
 :: Restore data files
-echo 데이터 파일 복원 중...
-if exist ""stock.xlsx.bak"" (
-    copy /y ""stock.xlsx.bak"" ""stock.xlsx"" >nul
-    del ""stock.xlsx.bak"" >nul
+echo [4/5] 데이터 파일 복원 중...
+if exist ""{appDirEscaped}\stock.xlsx.bak"" (
+    copy /y ""{appDirEscaped}\stock.xlsx.bak"" ""{appDirEscaped}\stock.xlsx"" >nul
+    del ""{appDirEscaped}\stock.xlsx.bak"" >nul
 )
-if exist ""stock_logs.json.bak"" (
-    copy /y ""stock_logs.json.bak"" ""stock_logs.json"" >nul
-    del ""stock_logs.json.bak"" >nul
+if exist ""{appDirEscaped}\stock_logs.json.bak"" (
+    copy /y ""{appDirEscaped}\stock_logs.json.bak"" ""{appDirEscaped}\stock_logs.json"" >nul
+    del ""{appDirEscaped}\stock_logs.json.bak"" >nul
 )
-if exist ""autosave_settings.json.bak"" (
-    copy /y ""autosave_settings.json.bak"" ""autosave_settings.json"" >nul
-    del ""autosave_settings.json.bak"" >nul
+if exist ""{appDirEscaped}\autosave_settings.json.bak"" (
+    copy /y ""{appDirEscaped}\autosave_settings.json.bak"" ""{appDirEscaped}\autosave_settings.json"" >nul
+    del ""{appDirEscaped}\autosave_settings.json.bak"" >nul
 )
 
 :: Cleanup
-echo 정리 중...
-del ""update.zip"" >nul 2>&1
+echo [5/5] 정리 중...
+del ""{appDirEscaped}\update.zip"" >nul 2>&1
 
 :: Launch new version
-echo 프로그램을 다시 시작합니다...
-start """" ""MSM.exe""
+echo.
+echo 업데이트 완료! 프로그램을 다시 시작합니다...
+timeout /t 2 /nobreak > nul
+start """" ""{appDirEscaped}\MSM.exe""
 
 :: Self-delete this script
-(goto) 2>nul & del ""%~f0""
+del ""%~f0"" >nul 2>&1
+exit
 ";
 
                 await File.WriteAllTextAsync(updaterScriptPath, batchScript, System.Text.Encoding.UTF8);
