@@ -54,18 +54,14 @@ namespace MSM.ViewModels
                 if (SetAndRaiseIfChanged(ref _statusFilter, value))
                 {
                     OnPropertyChanged(nameof(IsFilterAll));
-                    OnPropertyChanged(nameof(IsFilterSafe));
-                    OnPropertyChanged(nameof(IsFilterWarning));
-                    OnPropertyChanged(nameof(IsFilterAlert));
+                    OnPropertyChanged(nameof(IsFilterWarningOrAlert));
                     FilterProducts();
                 }
             }
         }
 
         public bool IsFilterAll => StatusFilter == "all";
-        public bool IsFilterSafe => StatusFilter == "safe";
-        public bool IsFilterWarning => StatusFilter == "warning";
-        public bool IsFilterAlert => StatusFilter == "alert";
+        public bool IsFilterWarningOrAlert => StatusFilter == "warning_alert";
 
         public ICommand SetFilterCommand { get; }
 
@@ -141,9 +137,7 @@ namespace MSM.ViewModels
             // Apply status filter
             filtered = StatusFilter switch
             {
-                "safe" => filtered.Where(p => p.IsSafe),
-                "warning" => filtered.Where(p => p.IsWarning),
-                "alert" => filtered.Where(p => p.IsAlert),
+                "warning_alert" => filtered.Where(p => p.IsWarning || p.IsAlert),
                 _ => filtered // "all"
             };
 

@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "/Users/admin/DEV/MSM/MSM.csproj": {}
+    "/Users/admin/DEV/ETC/MSM/MSM.csproj": {}
   },
   "projects": {
-    "/Users/admin/DEV/MSM/MSM.csproj": {
+    "/Users/admin/DEV/ETC/MSM/MSM.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "/Users/admin/DEV/MSM/MSM.csproj",
+        "projectUniqueName": "/Users/admin/DEV/ETC/MSM/MSM.csproj",
         "projectName": "MSM",
-        "projectPath": "/Users/admin/DEV/MSM/MSM.csproj",
+        "projectPath": "/Users/admin/DEV/ETC/MSM/MSM.csproj",
         "packagesPath": "/Users/admin/.nuget/packages/",
-        "outputPath": "/Users/admin/DEV/MSM/obj/",
+        "outputPath": "/Users/admin/DEV/ETC/MSM/obj/",
         "projectStyle": "PackageReference",
         "configFilePaths": [
           "/Users/admin/.nuget/NuGet/NuGet.Config"

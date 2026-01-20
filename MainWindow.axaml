@@ -88,7 +88,7 @@
                 Background="{DynamicResource SemiGrey0Color}"
                 Padding="24,12"
                 BoxShadow="0 -2 8 0 #10000000">
-            <Grid ColumnDefinitions="*,Auto">
+            <Grid ColumnDefinitions="*,Auto,Auto">
                 <!-- Status Info -->
                 <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="24" VerticalAlignment="Center">
                     <StackPanel Orientation="Horizontal" Spacing="6">
@@ -106,8 +106,45 @@
                                Foreground="{DynamicResource SemiGrey7Color}"/>
                 </StackPanel>
 
+                <!-- Auto-Save Path Status -->
+                <Border Grid.Column="1"
+                        Background="{DynamicResource SemiGrey1Color}"
+                        CornerRadius="4"
+                        Padding="12,6"
+                        Margin="0,0,16,0"
+                        VerticalAlignment="Center">
+                    <StackPanel Orientation="Horizontal" Spacing="12">
+                        <TextBlock Text="자동저장:"
+                                   FontSize="12"
+                                   VerticalAlignment="Center"
+                                   Foreground="{DynamicResource SemiGrey6Color}"/>
+                        <StackPanel Orientation="Horizontal" Spacing="4">
+                            <TextBlock Text="기본"
+                                       FontSize="12"
+                                       VerticalAlignment="Center"/>
+                            <TextBlock Name="PrimaryPathStatus"
+                                       Text="[오류]"
+                                       FontSize="12"
+                                       FontWeight="SemiBold"
+                                       Foreground="#FFDC2626"
+                                       VerticalAlignment="Center"/>
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal" Spacing="4">
+                            <TextBlock Text="보조"
+                                       FontSize="12"
+                                       VerticalAlignment="Center"/>
+                            <TextBlock Name="SecondaryPathStatus"
+                                       Text="[오류]"
+                                       FontSize="12"
+                                       FontWeight="SemiBold"
+                                       Foreground="#FFDC2626"
+                                       VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </StackPanel>
+                </Border>
+
                 <!-- Action Buttons -->
-                <StackPanel Grid.Column="1"
+                <StackPanel Grid.Column="2"
                             Orientation="Horizontal"
                             Spacing="12">
                     <Button Content="저장 후 종료"
@@ -144,26 +181,10 @@
                                      Padding="12,6"
                                      FontSize="14"/>
                         <RadioButton GroupName="StatusFilter"
-                                     Content="안전"
-                                     IsChecked="{Binding IsFilterSafe}"
+                                     Content="경고/부족"
+                                     IsChecked="{Binding IsFilterWarningOrAlert}"
                                      Command="{Binding SetFilterCommand}"
-                                     CommandParameter="safe"
-                                     Padding="12,6"
-                                     FontSize="14"
-                                     Foreground="#FF059669"/>
-                        <RadioButton GroupName="StatusFilter"
-                                     Content="경고"
-                                     IsChecked="{Binding IsFilterWarning}"
-                                     Command="{Binding SetFilterCommand}"
-                                     CommandParameter="warning"
-                                     Padding="12,6"
-                                     FontSize="14"
-                                     Foreground="#FFD97706"/>
-                        <RadioButton GroupName="StatusFilter"
-                                     Content="부족"
-                                     IsChecked="{Binding IsFilterAlert}"
-                                     Command="{Binding SetFilterCommand}"
-                                     CommandParameter="alert"
+                                     CommandParameter="warning_alert"
                                      Padding="12,6"
                                      FontSize="14"
                                      Foreground="#FFDC2626"/>

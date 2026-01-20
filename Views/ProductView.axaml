@@ -103,14 +103,9 @@
                                    Classes.alert="{Binding IsAlert}"
                                    Classes.warning="{Binding IsWarning}"
                                    Classes.safe="{Binding IsSafe}"
+                                   Text="{Binding QuantityStatus}"
                                    FontSize="10"
-                                   FontWeight="Medium">
-                            <TextBlock.Text>
-                                <MultiBinding StringFormat="{}{0}">
-                                    <Binding Path="IsAlert" />
-                                </MultiBinding>
-                            </TextBlock.Text>
-                        </TextBlock>
+                                   FontWeight="Medium"/>
                     </Border>
                 </Grid>
 

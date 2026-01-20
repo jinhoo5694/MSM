@@ -36,6 +36,7 @@ namespace MSM.ViewModels
                     OnPropertyChanged(nameof(IsAlert));
                     OnPropertyChanged(nameof(IsWarning));
                     OnPropertyChanged(nameof(IsSafe));
+                    OnPropertyChanged(nameof(QuantityStatus));
                 }
             }
         }
@@ -52,6 +53,7 @@ namespace MSM.ViewModels
                     OnPropertyChanged(nameof(IsAlert));
                     OnPropertyChanged(nameof(IsWarning));
                     OnPropertyChanged(nameof(IsSafe));
+                    OnPropertyChanged(nameof(QuantityStatus));
                 }
             }
         }
@@ -68,6 +70,7 @@ namespace MSM.ViewModels
                     OnPropertyChanged(nameof(IsAlert));
                     OnPropertyChanged(nameof(IsWarning));
                     OnPropertyChanged(nameof(IsSafe));
+                    OnPropertyChanged(nameof(QuantityStatus));
                 }
             }
         }
@@ -95,10 +98,10 @@ namespace MSM.ViewModels
             get
             {
                 if (Quantity <= AlertQuantity)
-                    return "Alert";
+                    return "부족";
                 if (Quantity < SafeQuantity)
-                    return "Warning";
-                return "Safe";
+                    return "경고";
+                return "안전";
             }
         }
 
