@@ -25,7 +25,7 @@ namespace MSM.Services
         public string Name { get; set; } = string.Empty;
         public int OldQty { get; set; }
         public int NewQty { get; set; }
-        public int ChangedQty => OldQty - NewQty;
+        public int ChangedQty => NewQty - OldQty;
         public string Reason { get; set; } = string.Empty;
     }
 }

@@ -73,7 +73,7 @@
                                    VerticalAlignment="Center"/>
                     </StackPanel>
                     <StackPanel Orientation="Horizontal" Spacing="8">
-                        <TextBlock Text="총 차감 수량:"
+                        <TextBlock Text="총 변경 수량:"
                                    FontSize="14"
                                    VerticalAlignment="Center"/>
                         <TextBlock Name="TotalChangedText"
@@ -122,12 +122,9 @@
                     <DataGridTextColumn Header="변경 후"
                                         Binding="{Binding NewQty, DataType=services:StockChangeLogEntry}"
                                         Width="70"/>
-                    <DataGridTextColumn Header="차감"
+                    <DataGridTextColumn Header="변경"
                                         Binding="{Binding ChangedQty, DataType=services:StockChangeLogEntry}"
                                         Width="70"/>
-                    <DataGridTextColumn Header="비고"
-                                        Binding="{Binding Reason, DataType=services:StockChangeLogEntry}"
-                                        Width="120"/>
                 </DataGrid.Columns>
             </DataGrid>
         </Border>

@@ -355,7 +355,7 @@ namespace MSM.Services
             ws2.Cells[1, 3].Value = "상품명";
             ws2.Cells[1, 4].Value = "변경 전 수량";
             ws2.Cells[1, 5].Value = "변경 후 수량";
-            ws2.Cells[1, 6].Value = "차감된 수량";
+            ws2.Cells[1, 6].Value = "변경 수량";
             ws2.Cells[1, 7].Value = "비고";
 
             if (File.Exists(_logFilePath))
@@ -374,7 +374,7 @@ namespace MSM.Services
                             ws2.Cells[r2, 3].Value = log.Name;
                             ws2.Cells[r2, 4].Value = log.OldQty;
                             ws2.Cells[r2, 5].Value = log.NewQty;
-                            ws2.Cells[r2, 6].Value = log.OldQty - log.NewQty; // 차감된 수량
+                            ws2.Cells[r2, 6].Value = log.NewQty - log.OldQty; // 변경 수량
                             ws2.Cells[r2, 7].Value = log.Reason;
                             r2++;
                         }
