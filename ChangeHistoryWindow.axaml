@@ -118,10 +118,10 @@
                                         Width="*"/>
                     <DataGridTextColumn Header="변경 전"
                                         Binding="{Binding OldQty, DataType=services:StockChangeLogEntry}"
-                                        Width="70"/>
+                                        Width="80"/>
                     <DataGridTextColumn Header="변경 후"
                                         Binding="{Binding NewQty, DataType=services:StockChangeLogEntry}"
-                                        Width="70"/>
+                                        Width="80"/>
                     <DataGridTextColumn Header="변경"
                                         Binding="{Binding ChangedQty, DataType=services:StockChangeLogEntry}"
                                         Width="70"/>
