@@ -7,8 +7,8 @@
         mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="600"
         x:Class="MSM.ChangeHistoryWindow"
         Title="재고 변경 내역"
-        Width="900"
-        Height="600"
+        MinWidth="800"
+        MinHeight="500"
         WindowStartupLocation="CenterOwner"
         Background="{DynamicResource SemiGrey1Color}">
 

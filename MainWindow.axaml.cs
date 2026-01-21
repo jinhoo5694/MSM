@@ -495,6 +495,11 @@ namespace MSM
         private async void OnShowChangeHistoryClick(object? sender, RoutedEventArgs e)
         {
             var historyWindow = new ChangeHistoryWindow(_stockService);
+
+            // Set size to 80% width and 90% height of main window
+            historyWindow.Width = this.Bounds.Width * 0.8;
+            historyWindow.Height = this.Bounds.Height * 0.9;
+
             await historyWindow.ShowDialog(this);
             _barcodeTextBox?.Focus();
         }
