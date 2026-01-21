@@ -699,6 +699,7 @@ namespace MSM
 
             var downloadTask = Task.Run(async () =>
             {
+                // DownloadAndInstallAsync will call Environment.Exit(0) on success
                 var result = await UpdateService.DownloadAndInstallAsync(downloadUrl, progress =>
                 {
                     Dispatcher.UIThread.Post(() =>
@@ -708,23 +709,11 @@ namespace MSM
                     });
                 });
 
+                // Only reaches here on failure (success exits the app)
                 await Dispatcher.UIThread.InvokeAsync(async () =>
                 {
                     progressDialog.Close();
-
-                    if (result)
-                    {
-                        // Show message and wait a moment for the updater script to start
-                        await ShowSimpleDialog("업데이트", "업데이트를 설치합니다. 프로그램이 자동으로 재시작됩니다.");
-                        // Give the batch script time to start
-                        await Task.Delay(1000);
-                        // Exit the application - the updater script will restart it
-                        Environment.Exit(0);
-                    }
-                    else
-                    {
-                        await ShowSimpleDialog("오류", "업데이트 설치 중 오류가 발생했습니다.");
-                    }
+                    await ShowSimpleDialog("오류", "업데이트 설치 중 오류가 발생했습니다.");
                 });
             });
 
