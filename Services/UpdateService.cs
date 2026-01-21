@@ -191,7 +191,8 @@ del ""%~f0"" >nul 2>&1
 exit
 ";
 
-                await File.WriteAllTextAsync(updaterScriptPath, batchScript, System.Text.Encoding.UTF8);
+                // Write without BOM to prevent corruption in cmd.exe
+                await File.WriteAllTextAsync(updaterScriptPath, batchScript, new System.Text.UTF8Encoding(false));
 
                 // Launch the updater script and exit
                 var startInfo = new ProcessStartInfo
