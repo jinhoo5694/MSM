@@ -5,7 +5,11 @@
       "Bash(dotnet publish:*)",
       "Bash(dir:*)",
       "Bash(echo:*)",
-      "Bash(dir /s /b)"
+      "Bash(dir /s /b)",
+      "Bash(git add:*)",
+      "Bash(git commit -m \"$\\(cat <<''EOF''\nFix date display in change history modal \\(v1.0.8\\)\n\n- Add PropertyNameCaseInsensitive for JSON deserialization\n- Set default start date to first of month instead of today\n\nCo-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>\nEOF\n\\)\")",
+      "Bash(git push:*)",
+      "Bash(git commit:*)"
     ],
     "deny": [],
     "ask": []
