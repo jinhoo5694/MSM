@@ -21,6 +21,8 @@ namespace MSM.Services
     public class StockChangeLogEntry
     {
         public DateTime Time { get; set; }
+        public string TimeFormatted => Time.ToString("HH:mm:ss");
+        public string DateFormatted => Time.ToString("yyyy-MM-dd");
         public string Barcode { get; set; } = string.Empty;
         public string Name { get; set; } = string.Empty;
         public int OldQty { get; set; }
