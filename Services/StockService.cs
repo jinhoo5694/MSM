@@ -294,12 +294,13 @@ namespace MSM.Services
             if (!File.Exists(_logFilePath))
                 return results;
 
+            var jsonOptions = new System.Text.Json.JsonSerializerOptions { PropertyNameCaseInsensitive = true };
             var lines = File.ReadAllLines(_logFilePath);
             foreach (var line in lines)
             {
                 try
                 {
-                    var log = System.Text.Json.JsonSerializer.Deserialize<StockChangeLog>(line);
+                    var log = System.Text.Json.JsonSerializer.Deserialize<StockChangeLog>(line, jsonOptions);
                     if (log != null && log.Time.Date >= startDate.Date && log.Time.Date <= endDate.Date)
                     {
                         results.Add(new StockChangeLogEntry

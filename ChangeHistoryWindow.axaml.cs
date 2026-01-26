@@ -36,8 +36,8 @@ namespace MSM
             _todayButton = this.FindControl<Button>("TodayButton")!;
             _closeButton = this.FindControl<Button>("CloseButton")!;
 
-            // Set default dates to today
-            _startDatePicker.SelectedDate = DateTime.Today;
+            // Set default dates: start of month to today
+            _startDatePicker.SelectedDate = new DateTime(DateTime.Today.Year, DateTime.Today.Month, 1);
             _endDatePicker.SelectedDate = DateTime.Today;
 
             _historyDataGrid.ItemsSource = LogEntries;
