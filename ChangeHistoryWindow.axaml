@@ -102,28 +102,28 @@
                       CanUserResizeColumns="True"
                       GridLinesVisibility="Horizontal"
                       BorderThickness="0"
-                      x:DataType="services:StockChangeLogEntry">
+                      x:CompileBindings="False">
                 <DataGrid.Columns>
                     <DataGridTextColumn Header="시간"
-                                        Binding="{Binding Time, StringFormat='{}{0:HH:mm:ss}', DataType=services:StockChangeLogEntry}"
+                                        Binding="{Binding Time, StringFormat={}{0:HH:mm:ss}}"
                                         Width="80"/>
                     <DataGridTextColumn Header="날짜"
-                                        Binding="{Binding Time, StringFormat='{}{0:yyyy-MM-dd}', DataType=services:StockChangeLogEntry}"
+                                        Binding="{Binding Time, StringFormat={}{0:yyyy-MM-dd}}"
                                         Width="100"/>
                     <DataGridTextColumn Header="바코드"
-                                        Binding="{Binding Barcode, DataType=services:StockChangeLogEntry}"
+                                        Binding="{Binding Barcode}"
                                         Width="120"/>
                     <DataGridTextColumn Header="상품명"
-                                        Binding="{Binding Name, DataType=services:StockChangeLogEntry}"
+                                        Binding="{Binding Name}"
                                         Width="*"/>
                     <DataGridTextColumn Header="변경 전"
-                                        Binding="{Binding OldQty, DataType=services:StockChangeLogEntry}"
+                                        Binding="{Binding OldQty}"
                                         Width="80"/>
                     <DataGridTextColumn Header="변경 후"
-                                        Binding="{Binding NewQty, DataType=services:StockChangeLogEntry}"
+                                        Binding="{Binding NewQty}"
                                         Width="80"/>
                     <DataGridTextColumn Header="변경"
-                                        Binding="{Binding ChangedQty, DataType=services:StockChangeLogEntry}"
+                                        Binding="{Binding ChangedQty}"
                                         Width="70"/>
                 </DataGrid.Columns>
             </DataGrid>
