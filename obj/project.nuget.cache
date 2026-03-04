@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "dgSpecHash": "GjPyiAjW/f8=",
+  "dgSpecHash": "81Uxl76Pmu0=",
   "success": true,
   "projectFilePath": "/Users/admin/DEV/ETC/MSM/MSM.csproj",
   "expectedPackageFiles": [
@@ -48,10 +48,7 @@
     "/Users/admin/.nuget/packages/system.security.cryptography.pkcs/9.0.3/system.security.cryptography.pkcs.9.0.3.nupkg.sha512",
     "/Users/admin/.nuget/packages/system.security.cryptography.xml/9.0.3/system.security.cryptography.xml.9.0.3.nupkg.sha512",
     "/Users/admin/.nuget/packages/system.text.encoding.codepages/9.0.3/system.text.encoding.codepages.9.0.3.nupkg.sha512",
-    "/Users/admin/.nuget/packages/tmds.dbus.protocol/0.21.2/tmds.dbus.protocol.0.21.2.nupkg.sha512",
-    "/Users/admin/.nuget/packages/microsoft.netcore.app.runtime.win-x64/9.0.11/microsoft.netcore.app.runtime.win-x64.9.0.11.nupkg.sha512",
-    "/Users/admin/.nuget/packages/microsoft.aspnetcore.app.runtime.win-x64/9.0.11/microsoft.aspnetcore.app.runtime.win-x64.9.0.11.nupkg.sha512",
-    "/Users/admin/.nuget/packages/microsoft.netcore.app.host.win-x64/9.0.11/microsoft.netcore.app.host.win-x64.9.0.11.nupkg.sha512"
+    "/Users/admin/.nuget/packages/tmds.dbus.protocol/0.21.2/tmds.dbus.protocol.0.21.2.nupkg.sha512"
   ],
   "logs": []
 }
