@@ -16,6 +16,7 @@ namespace MSM.Services
         void ExportStockReport(string filePath);
         void DeleteProduct(string barcode);
         IEnumerable<StockChangeLogEntry> GetLogsByDateRange(DateTime startDate, DateTime endDate);
+        IEnumerable<StockChangeLogEntry> GetLogsByBarcode(string barcode);
     }
 
     public class StockChangeLogEntry

@@ -131,6 +131,12 @@
                             Orientation="Horizontal"
                             HorizontalAlignment="Right"
                             Spacing="8">
+                    <Button Content="내역"
+                            Command="{Binding HistoryCommand}"
+                            CommandParameter="{Binding .}"
+                            Padding="14,6"
+                            FontSize="14"
+                            ToolTip.Tip="재고 변경 내역"/>
                     <Button x:Name="EditButton"
                             Content="수정"
                             Command="{Binding EditCommand}"

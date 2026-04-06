@@ -17,7 +17,10 @@ namespace MSM.Services
         private readonly List<StockChangeLog> _changeLogs = new();
 
 
-        private readonly string _logFilePath = Path.Combine(AppContext.BaseDirectory, "stock_logs.json");
+        private static readonly string _dataDirectory = Path.Combine(
+            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "MSM");
+        private readonly string _logFilePath;
+        private static readonly string _legacyLogFilePath = Path.Combine(AppContext.BaseDirectory, "stock_logs.json");
 
         public class StockChangeLog
         {
@@ -32,6 +35,15 @@ namespace MSM.Services
         public StockService(string filePath)
         {
             _filePath = filePath;
+
+            Directory.CreateDirectory(_dataDirectory);
+            _logFilePath = Path.Combine(_dataDirectory, "stock_logs.json");
+
+            // Migrate legacy log file from app directory
+            if (!File.Exists(_logFilePath) && File.Exists(_legacyLogFilePath))
+            {
+                try { File.Copy(_legacyLogFilePath, _logFilePath); } catch { }
+            }
 
             if (!File.Exists(_filePath))
             {
@@ -284,6 +296,43 @@ namespace MSM.Services
             _changeLogs.Add(log);
             var json = System.Text.Json.JsonSerializer.Serialize(log);
             File.AppendAllText(_logFilePath, json + Environment.NewLine);
+        }
+
+        // 바코드로 로그 조회
+        public IEnumerable<StockChangeLogEntry> GetLogsByBarcode(string barcode)
+        {
+            var results = new List<StockChangeLogEntry>();
+
+            if (!File.Exists(_logFilePath))
+                return results;
+
+            var jsonOptions = new System.Text.Json.JsonSerializerOptions { PropertyNameCaseInsensitive = true };
+            var lines = File.ReadAllLines(_logFilePath);
+            foreach (var line in lines)
+            {
+                try
+                {
+                    var log = System.Text.Json.JsonSerializer.Deserialize<StockChangeLog>(line, jsonOptions);
+                    if (log != null && log.Barcode.Equals(barcode, StringComparison.OrdinalIgnoreCase))
+                    {
+                        results.Add(new StockChangeLogEntry
+                        {
+                            Time = log.Time,
+                            Barcode = log.Barcode,
+                            Name = log.Name,
+                            OldQty = log.OldQty,
+                            NewQty = log.NewQty,
+                            Reason = log.Reason
+                        });
+                    }
+                }
+                catch
+                {
+                    // 잘못된 라인은 무시
+                }
+            }
+
+            return results.OrderByDescending(x => x.Time);
         }
 
         // 날짜 범위로 로그 조회

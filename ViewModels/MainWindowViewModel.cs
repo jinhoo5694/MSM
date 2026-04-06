@@ -162,6 +162,7 @@ namespace MSM.ViewModels
 
         public ICommand EditProductCommand { get; }
         public ICommand DeleteProductCommand { get; }
+        public ICommand HistoryProductCommand { get; }
         public ICommand SearchCommand { get; }
 
         public ICommand CloseCommand { get; }
@@ -169,6 +170,7 @@ namespace MSM.ViewModels
         
         public event Func<EditAndReduceStockViewModel, Task<Product?>>? ShowEditAndReduceStockWindow;
         public event Func<AddProductViewModel, Task<Product?>>? ShowAddProductWindow;
+        public event Func<string, Task>? ShowProductHistoryWindow;
 
         public event Action? RequestFocusBarcode;
         public event Func<string, Task>? ShowAlert;
@@ -184,8 +186,16 @@ namespace MSM.ViewModels
             _owner = owner;
 
             SetFilterCommand = new RelayCommand(param => StatusFilter = param as string ?? "all");
-            ExportReportCommand = new AsyncRelayCommand(ExportReportAsync); 
-            
+            ExportReportCommand = new AsyncRelayCommand(ExportReportAsync);
+
+            HistoryProductCommand = new AsyncRelayCommand(async parameter =>
+            {
+                if (parameter is ProductViewModel productViewModel && ShowProductHistoryWindow != null)
+                {
+                    await ShowProductHistoryWindow.Invoke(productViewModel.Barcode);
+                }
+            });
+
             EditProductCommand = new AsyncRelayCommand(async parameter =>
             {
                 if (parameter is ProductViewModel productViewModel && ShowEditAndReduceStockWindow != null)
@@ -310,7 +320,7 @@ namespace MSM.ViewModels
             _allProducts.Clear();
             foreach (var product in products ?? Enumerable.Empty<Product>())
             {
-                _allProducts.Add(new ProductViewModel(product, EditProductCommand, DeleteProductCommand));
+                _allProducts.Add(new ProductViewModel(product, EditProductCommand, DeleteProductCommand, HistoryProductCommand));
             }
             FilterProducts(); // This will apply the current filter
         }

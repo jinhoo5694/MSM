@@ -134,6 +134,15 @@ namespace MSM
                     return result;
                 };
 
+                viewModel.ShowProductHistoryWindow += async barcode =>
+                {
+                    viewModel.IsDialogOpen = true;
+                    var dialog = new ProductHistoryWindow(_stockService, barcode);
+                    await dialog.ShowDialog(this);
+                    viewModel.IsDialogOpen = false;
+                    _barcodeTextBox?.Focus();
+                };
+
                 viewModel.RequestFocusBarcode += () =>
                 {
                     Dispatcher.UIThread.Post(() =>

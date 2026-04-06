@@ -9,7 +9,12 @@ namespace MSM.Models
         public string? PrimaryPath { get; set; }
         public string? SecondaryPath { get; set; }
 
-        private static readonly string SettingsFilePath = Path.Combine(AppContext.BaseDirectory, "autosave_settings.json");
+        private static readonly string SettingsDirectory = Path.Combine(
+            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "MSM");
+        private static readonly string SettingsFilePath = Path.Combine(SettingsDirectory, "autosave_settings.json");
+
+        // Legacy path for migration from older versions
+        private static readonly string LegacySettingsFilePath = Path.Combine(AppContext.BaseDirectory, "autosave_settings.json");
 
         public static AutoSaveSettings Load()
         {
@@ -19,6 +24,15 @@ namespace MSM.Models
                 {
                     var json = File.ReadAllText(SettingsFilePath);
                     return JsonSerializer.Deserialize<AutoSaveSettings>(json) ?? new AutoSaveSettings();
+                }
+
+                // Migrate from legacy location (AppContext.BaseDirectory)
+                if (File.Exists(LegacySettingsFilePath))
+                {
+                    var json = File.ReadAllText(LegacySettingsFilePath);
+                    var settings = JsonSerializer.Deserialize<AutoSaveSettings>(json) ?? new AutoSaveSettings();
+                    settings.Save(); // Save to new location
+                    return settings;
                 }
             }
             catch
@@ -32,6 +46,7 @@ namespace MSM.Models
         {
             try
             {
+                Directory.CreateDirectory(SettingsDirectory);
                 var json = JsonSerializer.Serialize(this, new JsonSerializerOptions { WriteIndented = true });
                 File.WriteAllText(SettingsFilePath, json);
             }

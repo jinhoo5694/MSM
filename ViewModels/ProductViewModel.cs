@@ -135,12 +135,14 @@ namespace MSM.ViewModels
 
         public ICommand EditCommand { get; }
         public ICommand DeleteCommand { get; }
+        public ICommand HistoryCommand { get; }
 
-        public ProductViewModel(Product product, ICommand editCommand, ICommand deleteCommand)
+        public ProductViewModel(Product product, ICommand editCommand, ICommand deleteCommand, ICommand historyCommand)
         {
             _product = product;
             EditCommand = editCommand;
             DeleteCommand = deleteCommand;
+            HistoryCommand = historyCommand;
 
             UpdateProductImage();
         }

@@ -1,10 +1,9 @@
 using System.Linq;
 using Avalonia.Controls;
 using Avalonia.Input;
+using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
 using Avalonia.VisualTree;
-using MSM.ViewModels;
-using MSM.Models;
 
 namespace MSM
 {
@@ -27,7 +26,7 @@ namespace MSM
             {
                 foreach (var nud in this.GetVisualDescendants().OfType<NumericUpDown>())
                 {
-                    nud.PointerWheelChanged += (s, e) => e.Handled = true;
+                    nud.AddHandler(PointerWheelChangedEvent, (s, e) => e.Handled = true, RoutingStrategies.Tunnel);
                 }
             };
         }
