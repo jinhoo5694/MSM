@@ -320,7 +320,9 @@ namespace MSM.ViewModels
             _allProducts.Clear();
             foreach (var product in products ?? Enumerable.Empty<Product>())
             {
-                _allProducts.Add(new ProductViewModel(product, EditProductCommand, DeleteProductCommand, HistoryProductCommand));
+                var pvm = new ProductViewModel(product, EditProductCommand, DeleteProductCommand, HistoryProductCommand, _stockService);
+                pvm.ShowConfirmation += msg => ShowConfirmation?.Invoke(msg) ?? Task.FromResult(true);
+                _allProducts.Add(pvm);
             }
             FilterProducts(); // This will apply the current filter
         }

@@ -1,14 +1,19 @@
+using System;
 using System.IO;
 using System.Net;
+using System.Threading.Tasks;
 using System.Windows.Input;
 using Avalonia.Media.Imaging;
+using MSM.Commands;
 using MSM.Models;
+using MSM.Services;
 
 namespace MSM.ViewModels
 {
     public class ProductViewModel : ViewModelBase
     {
         private Product _product;
+        private readonly IStockService _stockService;
         public Product Product => _product;
 
         public string Barcode => _product.Barcode;
@@ -133,16 +138,50 @@ namespace MSM.ViewModels
             }
         }
 
+        private int _deltaQuantity;
+        public int DeltaQuantity
+        {
+            get => _deltaQuantity;
+            set => SetAndRaiseIfChanged(ref _deltaQuantity, value);
+        }
+
+        public event Func<string, Task<bool>>? ShowConfirmation;
+
         public ICommand EditCommand { get; }
         public ICommand DeleteCommand { get; }
         public ICommand HistoryCommand { get; }
+        public ICommand AddStockCommand { get; }
+        public ICommand ReduceStockCommand { get; }
 
-        public ProductViewModel(Product product, ICommand editCommand, ICommand deleteCommand, ICommand historyCommand)
+        public ProductViewModel(Product product, ICommand editCommand, ICommand deleteCommand, ICommand historyCommand, IStockService stockService)
         {
             _product = product;
+            _stockService = stockService;
             EditCommand = editCommand;
             DeleteCommand = deleteCommand;
             HistoryCommand = historyCommand;
+
+            AddStockCommand = new AsyncRelayCommand(async _ =>
+            {
+                if (DeltaQuantity <= 0) return;
+                var confirmed = ShowConfirmation == null ||
+                    await ShowConfirmation.Invoke($"{Name}의 재고를 {DeltaQuantity}개 추가하시겠습니까?\n({Quantity} → {Quantity + DeltaQuantity})");
+                if (!confirmed) return;
+                Quantity += DeltaQuantity;
+                _stockService.UpdateStock(_product.Barcode, Quantity);
+                DeltaQuantity = 0;
+            });
+
+            ReduceStockCommand = new AsyncRelayCommand(async _ =>
+            {
+                if (DeltaQuantity <= 0 || DeltaQuantity > Quantity) return;
+                var confirmed = ShowConfirmation == null ||
+                    await ShowConfirmation.Invoke($"{Name}의 재고를 {DeltaQuantity}개 차감하시겠습니까?\n({Quantity} → {Quantity - DeltaQuantity})");
+                if (!confirmed) return;
+                Quantity -= DeltaQuantity;
+                _stockService.UpdateStock(_product.Barcode, Quantity);
+                DeltaQuantity = 0;
+            });
 
             UpdateProductImage();
         }

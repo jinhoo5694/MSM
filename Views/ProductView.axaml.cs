@@ -1,6 +1,9 @@
+using System.Linq;
 using Avalonia.Controls;
-using Avalonia.Markup.Xaml;
+using Avalonia.Input;
 using Avalonia.Interactivity;
+using Avalonia.Markup.Xaml;
+using Avalonia.VisualTree;
 using MSM.ViewModels;
 
 namespace MSM.Views
@@ -10,6 +13,7 @@ namespace MSM.Views
         public ProductView()
         {
             InitializeComponent();
+            DisableNumericUpDownScroll();
         }
 
         private void InitializeComponent()
@@ -17,11 +21,21 @@ namespace MSM.Views
             AvaloniaXamlLoader.Load(this);
         }
 
+        private void DisableNumericUpDownScroll()
+        {
+            this.Loaded += (_, _) =>
+            {
+                foreach (var nud in this.GetVisualDescendants().OfType<NumericUpDown>())
+                {
+                    nud.AddHandler(PointerWheelChangedEvent, (s, e) => e.Handled = true, RoutingStrategies.Tunnel);
+                }
+            };
+        }
+
         private void EditButton_Click(object sender, RoutedEventArgs e)
         {
             if (DataContext is ProductViewModel viewModel)
             {
-                // Manually invoke the command on the UI thread
                 viewModel.EditCommand.Execute(viewModel);
             }
         }

@@ -59,7 +59,7 @@
             Padding="12"
             BoxShadow="0 1 4 0 #10000000"
             Width="360"
-            Height="160">
+            Height="200">
 
         <Grid ColumnDefinitions="120,*">
             <!-- Product Image -->
@@ -68,13 +68,14 @@
                     CornerRadius="6"
                     ClipToBounds="True"
                     Width="100"
-                    Height="100">
+                    Height="100"
+                    VerticalAlignment="Top">
                 <Image Source="{Binding ProductImage}"
                        Stretch="UniformToFill"/>
             </Border>
 
             <!-- Product Info -->
-            <Grid Grid.Column="1" Margin="12,0,0,0" RowDefinitions="Auto,*,Auto">
+            <Grid Grid.Column="1" Margin="12,0,0,0" RowDefinitions="Auto,Auto,Auto,Auto">
                 <!-- Header with Name, Barcode and Status Badge -->
                 <Grid Grid.Row="0" ColumnDefinitions="*,Auto">
                     <StackPanel Grid.Column="0" Spacing="2">
@@ -110,27 +111,48 @@
                 </Grid>
 
                 <!-- Quantity Display -->
-                <StackPanel Grid.Row="1" VerticalAlignment="Center" Spacing="4">
+                <StackPanel Grid.Row="1" Spacing="2" Margin="0,4,0,0">
                     <TextBlock Text="재고 수량"
-                               FontSize="13"
+                               FontSize="12"
                                Foreground="{DynamicResource SemiGrey6Color}"/>
                     <StackPanel Orientation="Horizontal" Spacing="4">
                         <TextBlock Text="{Binding Quantity}"
                                    FontWeight="Bold"
-                                   FontSize="28"/>
+                                   FontSize="24"/>
                         <TextBlock Text="개"
-                                   FontSize="14"
+                                   FontSize="13"
                                    VerticalAlignment="Bottom"
-                                   Margin="0,0,0,5"
+                                   Margin="0,0,0,4"
                                    Foreground="{DynamicResource SemiGrey6Color}"/>
                     </StackPanel>
                 </StackPanel>
 
+                <!-- Quick Adjust -->
+                <StackPanel Grid.Row="2" Orientation="Horizontal" Spacing="4" Margin="0,6,0,0">
+                    <NumericUpDown Value="{Binding DeltaQuantity}"
+                                   FormatString="0"
+                                   Minimum="0"
+                                   Width="70"
+                                   FontSize="13"
+                                   Padding="4,3"/>
+                    <Button Content="추가"
+                            Command="{Binding AddStockCommand}"
+                            Padding="10,4"
+                            FontSize="12"
+                            Classes="Primary"/>
+                    <Button Content="차감"
+                            Command="{Binding ReduceStockCommand}"
+                            Padding="10,4"
+                            FontSize="12"
+                            Classes="Danger"/>
+                </StackPanel>
+
                 <!-- Action Buttons -->
-                <StackPanel Grid.Row="2"
+                <StackPanel Grid.Row="3"
                             Orientation="Horizontal"
                             HorizontalAlignment="Right"
-                            Spacing="8">
+                            Spacing="8"
+                            Margin="0,6,0,0">
                     <Button Content="내역"
                             Command="{Binding HistoryCommand}"
                             CommandParameter="{Binding .}"
