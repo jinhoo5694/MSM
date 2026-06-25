@@ -62,14 +62,14 @@
             HorizontalAlignment="Stretch"
             Height="200">
 
-        <Grid ColumnDefinitions="120,*">
+        <Grid ColumnDefinitions="Auto,*">
             <!-- Product Image -->
             <Border Grid.Column="0"
                     Background="{DynamicResource SemiGrey2Color}"
                     CornerRadius="6"
                     ClipToBounds="True"
-                    Width="100"
-                    Height="100"
+                    Width="92"
+                    Height="92"
                     VerticalAlignment="Top">
                 <Image Source="{Binding ProductImage}"
                        Stretch="UniformToFill"/>
@@ -129,51 +129,69 @@
                 </StackPanel>
 
                 <!-- Quick Adjust -->
-                <StackPanel Grid.Row="2" Orientation="Horizontal" Spacing="4" Margin="0,6,0,0">
-                    <NumericUpDown Value="{Binding DeltaQuantity}"
+                <Grid Grid.Row="2"
+                      ColumnDefinitions="1.3*,*,*"
+                      ColumnSpacing="4"
+                      Margin="0,6,0,0">
+                    <NumericUpDown Grid.Column="0"
+                                   Value="{Binding DeltaQuantity}"
                                    FormatString="0"
                                    Minimum="0"
-                                   Width="70"
+                                   MinWidth="0"
                                    FontSize="13"
                                    Padding="4,3"/>
-                    <Button Content="추가"
+                    <Button Grid.Column="1"
+                            Content="추가"
                             Command="{Binding AddStockCommand}"
-                            Padding="10,4"
+                            Padding="4"
                             FontSize="12"
+                            HorizontalAlignment="Stretch"
+                            HorizontalContentAlignment="Center"
                             Classes="Primary"/>
-                    <Button Content="차감"
+                    <Button Grid.Column="2"
+                            Content="차감"
                             Command="{Binding ReduceStockCommand}"
-                            Padding="10,4"
+                            Padding="4"
                             FontSize="12"
+                            HorizontalAlignment="Stretch"
+                            HorizontalContentAlignment="Center"
                             Classes="Danger"/>
-                </StackPanel>
+                </Grid>
 
                 <!-- Action Buttons -->
-                <StackPanel Grid.Row="3"
-                            Orientation="Horizontal"
-                            HorizontalAlignment="Right"
-                            Spacing="8"
-                            Margin="0,6,0,0">
-                    <Button Content="내역"
+                <Grid Grid.Row="3"
+                      ColumnDefinitions="*,*,*"
+                      ColumnSpacing="6"
+                      Margin="0,6,0,0">
+                    <Button Grid.Column="0"
+                            Content="내역"
                             Command="{Binding HistoryCommand}"
                             CommandParameter="{Binding .}"
-                            Padding="14,6"
+                            Padding="6"
                             FontSize="14"
+                            HorizontalAlignment="Stretch"
+                            HorizontalContentAlignment="Center"
                             ToolTip.Tip="재고 변경 내역"/>
-                    <Button x:Name="EditButton"
+                    <Button Grid.Column="1"
+                            x:Name="EditButton"
                             Content="수정"
                             Command="{Binding EditCommand}"
                             CommandParameter="{Binding .}"
-                            Padding="14,6"
-                            FontSize="14"/>
-                    <Button x:Name="DeleteButton"
+                            Padding="6"
+                            FontSize="14"
+                            HorizontalAlignment="Stretch"
+                            HorizontalContentAlignment="Center"/>
+                    <Button Grid.Column="2"
+                            x:Name="DeleteButton"
                             Content="삭제"
                             Command="{Binding DeleteCommand}"
                             CommandParameter="{Binding .}"
                             Classes="Danger"
-                            Padding="14,6"
-                            FontSize="14"/>
-                </StackPanel>
+                            Padding="6"
+                            FontSize="14"
+                            HorizontalAlignment="Stretch"
+                            HorizontalContentAlignment="Center"/>
+                </Grid>
             </Grid>
         </Grid>
     </Border>
