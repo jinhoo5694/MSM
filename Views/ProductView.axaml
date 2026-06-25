@@ -58,7 +58,8 @@
             Margin="8"
             Padding="12"
             BoxShadow="0 1 4 0 #10000000"
-            Width="360"
+            MaxWidth="360"
+            HorizontalAlignment="Stretch"
             Height="200">
 
         <Grid ColumnDefinitions="120,*">

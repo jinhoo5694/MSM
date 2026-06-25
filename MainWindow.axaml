@@ -76,6 +76,11 @@
 
                 <!-- Quick Actions -->
                 <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="8">
+                    <Button Content="{Binding ColumnsToggleText}"
+                            Command="{Binding ToggleColumnsCommand}"
+                            Padding="16,10"
+                            FontSize="14"
+                            ToolTip.Tip="한 줄에 표시할 상품 개수 전환 (4 ↔ 6)"/>
                     <Button Content="변경 내역"
                             Click="OnShowChangeHistoryClick"
                             Padding="16,10"
@@ -226,7 +231,7 @@
                     <ItemsControl x:Name="ProductsItemsControl" ItemsSource="{Binding Products}">
                         <ItemsControl.ItemsPanel>
                             <ItemsPanelTemplate>
-                                <WrapPanel Orientation="Horizontal" />
+                                <UniformGrid Columns="{Binding GridColumns}" />
                             </ItemsPanelTemplate>
                         </ItemsControl.ItemsPanel>
                         <ItemsControl.ItemTemplate>

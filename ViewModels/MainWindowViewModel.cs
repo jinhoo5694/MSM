@@ -65,6 +65,24 @@ namespace MSM.ViewModels
 
         public ICommand SetFilterCommand { get; }
 
+        private int _gridColumns = 4;
+        public int GridColumns
+        {
+            get => _gridColumns;
+            set
+            {
+                if (SetAndRaiseIfChanged(ref _gridColumns, value))
+                {
+                    OnPropertyChanged(nameof(ColumnsToggleText));
+                }
+            }
+        }
+
+        // Button label shows the layout you'll switch TO
+        public string ColumnsToggleText => GridColumns == 4 ? "6개씩 보기" : "4개씩 보기";
+
+        public ICommand ToggleColumnsCommand { get; }
+
         public bool IsDialogOpen
         {
             get => _isDialogOpen;
@@ -186,6 +204,7 @@ namespace MSM.ViewModels
             _owner = owner;
 
             SetFilterCommand = new RelayCommand(param => StatusFilter = param as string ?? "all");
+            ToggleColumnsCommand = new RelayCommand(_ => GridColumns = GridColumns == 4 ? 6 : 4);
             ExportReportCommand = new AsyncRelayCommand(ExportReportAsync);
 
             HistoryProductCommand = new AsyncRelayCommand(async parameter =>
